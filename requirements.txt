@@ -1,3 +1,10 @@
 Flask
 gunicorn
 PyPDF2
+pdf2docx
+docx2pdf
+pdf2image
+yt_dlp
+python-docx
+whisper
+pytesseract
