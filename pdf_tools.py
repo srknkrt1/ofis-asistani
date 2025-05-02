@@ -1,59 +1,58 @@
-from PyPDF2 import PdfMerger, PdfReader, PdfWriter
-import subprocess
+from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from pdf2docx import Converter
 from docx2pdf import convert
-import pytesseract
 from pdf2image import convert_from_path
 from docx import Document
+import pytesseract
+import subprocess
 
-def birlestir_pdf_listesi(pdf_filepaths, cikti_yolu):
+def birlestir_pdf_listesi(pdf_paths, output_path):
     merger = PdfMerger()
-    for path in pdf_filepaths:
+    for path in pdf_paths:
         merger.append(path)
-    merger.write(cikti_yolu)
+    merger.write(output_path)
     merger.close()
 
-def bol_pdf(giris_pdf, bas_sayfa, bit_sayfa, cikti_pdf):
-    reader = PdfReader(giris_pdf)
+def bol_pdf(pdf_path, start, end, output_path):
+    reader = PdfReader(pdf_path)
     writer = PdfWriter()
-    for i in range(bas_sayfa - 1, bit_sayfa):
+    for i in range(start - 1, end):
         writer.add_page(reader.pages[i])
-    with open(cikti_pdf, "wb") as f:
+    with open(output_path, "wb") as f:
         writer.write(f)
 
-def dondur_pdf(giris_pdf, sayfa_no, aci, cikti_pdf):
-    reader = PdfReader(giris_pdf)
+def dondur_pdf(pdf_path, page_no, angle, output_path):
+    reader = PdfReader(pdf_path)
     writer = PdfWriter()
-    for i, sayfa in enumerate(reader.pages):
-        if i == sayfa_no - 1:
-            sayfa.rotate(aci)
-        writer.add_page(sayfa)
-    with open(cikti_pdf, "wb") as f:
+    for i, page in enumerate(reader.pages):
+        if i == page_no - 1:
+            page.rotate(angle)
+        writer.add_page(page)
+    with open(output_path, "wb") as f:
         writer.write(f)
 
-def sikistir_pdf(giris_pdf, cikti_pdf, kalite="/ebook"):
-    gs_path = "/usr/bin/gs"
+def sikistir_pdf(input_path, output_path, quality="/ebook"):
+    gs = "/usr/bin/gs"
     subprocess.call([
-        gs_path, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
-        f"-dPDFSETTINGS={kalite}", "-dNOPAUSE", "-dQUIET", "-dBATCH",
-        f"-sOutputFile={cikti_pdf}", giris_pdf
+        gs, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
+        f"-dPDFSETTINGS={quality}", "-dNOPAUSE", "-dQUIET", "-dBATCH",
+        f"-sOutputFile={output_path}", input_path
     ])
 
-def pdf_to_word(giris_pdf, cikti_docx):
-    cv = Converter(giris_pdf)
-    cv.convert(cikti_docx)
+def pdf_to_word(input_pdf, output_docx):
+    cv = Converter(input_pdf)
+    cv.convert(output_docx)
     cv.close()
 
-def word_to_pdf(giris_docx, cikti_pdf):
-    convert(giris_docx, cikti_pdf)
-
-def pdf_ocr_to_word(pdf_path, output_docx):
-    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
-    pages = convert_from_path(pdf_path)
+def pdf_to_word_ocr(input_pdf, output_docx):
+    images = convert_from_path(input_pdf)
     doc = Document()
-    for i, page in enumerate(pages, 1):
-        text = pytesseract.image_to_string(page, lang="tur+eng")
+    for i, img in enumerate(images, 1):
+        text = pytesseract.image_to_string(img, lang="tur+eng")
         doc.add_paragraph(f"--- Sayfa {i} ---")
         doc.add_paragraph(text)
         doc.add_page_break()
     doc.save(output_docx)
+
+def word_to_pdf(input_docx, output_pdf):
+    convert(input_docx, output_pdf)
