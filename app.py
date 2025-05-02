@@ -36,9 +36,6 @@ def pdf_merge():
     birlestir_pdf_listesi(input_paths, output_path)
     return send_file(output_path, as_attachment=True)
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 @app.route("/pdf/split", methods=["POST"])
 def pdf_split():
     file = request.files["pdf"]
@@ -87,3 +84,6 @@ def pdf_compress():
     }
     sikistir_pdf(input_path, output_path, kalite_map.get(kalite, "/ebook"))
     return send_file(output_path, as_attachment=True)
+
+if __name__ == "__main__":
+    app.run(debug=True)
