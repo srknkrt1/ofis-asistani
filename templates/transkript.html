@@ -1,9 +1,63 @@
 <!DOCTYPE html>
-<html>
-<head><title>Transkript</title></head>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Transkript</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 25px 0;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    form {
+      margin-top: 80px;
+      display: inline-block;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
 <body>
-<h2>📝 Transkript Özelliği</h2>
-<p>Bu özellik şu an web sürümünde aktif değil.</p>
-<a href="/">← Geri</a>
+
+  <header>📝 Transkript</header>
+
+  <form method="post" action="/transkript" enctype="multipart/form-data">
+    <input type="file" name="audio" accept=".mp3,.wav,.m4a" required><br>
+    <button type="submit">Transkripti Oluştur</button>
+  </form>
+
 </body>
 </html>
