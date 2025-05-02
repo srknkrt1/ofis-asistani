@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, send_file
 import os, tempfile
 from pdf_tools import (
     birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf,
-    pdf_to_word, pdf_to_word_ocr, word_to_pdf
+    pdf_to_word
 )
 
 app = Flask(__name__)
