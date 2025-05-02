@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head><title>PDF İşlemleri</title></head>
+<body>
+<h2>PDF Birleştir</h2>
+<form action="/pdf/merge" method="post" enctype="multipart/form-data">
+    <input type="file" name="pdfs" multiple required><br>
+    <input type="submit" value="Birleştir">
+</form>
+<h2>PDF Böl</h2>
+<form action="/pdf/split" method="post" enctype="multipart/form-data">
+    <input type="file" name="pdf" required><br>
+    Başlangıç: <input type="number" name="start" required><br>
+    Bitiş: <input type="number" name="end" required><br>
+    <input type="submit" value="Böl">
+</form>
+<h2>PDF Döndür</h2>
+<form action="/pdf/rotate" method="post" enctype="multipart/form-data">
+    <input type="file" name="pdf" required><br>
+    Sayfa No: <input type="number" name="page" required><br>
+    Açı: <input type="number" name="angle" required><br>
+    <input type="submit" value="Döndür">
+</form>
+<h2>PDF Sıkıştır</h2>
+<form action="/pdf/compress" method="post" enctype="multipart/form-data">
+    <input type="file" name="pdf" required><br>
+    Kalite:
+    <select name="quality">
+        <option value="ekstrem">Ekstrem</option>
+        <option value="düşük">Düşük</option>
+        <option value="orta">Orta</option>
+        <option value="yüksek">Yüksek</option>
+    </select><br>
+    <input type="submit" value="Sıkıştır">
+</form>
+<a href="/">← Geri</a>
+</body>
+</html>
