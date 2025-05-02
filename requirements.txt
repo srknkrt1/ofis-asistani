@@ -6,3 +6,4 @@ pdf2docx
 docx2pdf
 pdf2image
 python-docx
+pytesseract
