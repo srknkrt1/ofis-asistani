@@ -1,4 +1,4 @@
-from PyPDF2 import PdfMerger, PdfReader
+from PyPDF2 import PdfReader, PdfWriter
 import os
 import subprocess
 
