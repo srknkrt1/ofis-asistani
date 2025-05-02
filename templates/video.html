@@ -1,1 +1,11 @@
-<h2>🎥 Video İndirme (yakında)</h2><a href='/'>← Geri</a>
+<h2>🎥 YouTube İndirme</h2>
+<form method="post" action="/video/youtube">
+  <input type="text" name="url" placeholder="YouTube URL" required><br>
+  <select name="type">
+    <option value="video">Video (.mp4)</option>
+    <option value="audio">Ses (.mp3)</option>
+    <option value="playlist">Oynatma Listesi</option>
+  </select><br>
+  <input type="submit" value="İndir">
+</form>
+<a href="/">← Geri</a>
