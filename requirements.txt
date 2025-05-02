@@ -1,0 +1,9 @@
+Flask
+whisper
+pytesseract
+pdf2docx
+docx2pdf
+PyPDF2
+pdf2image
+yt_dlp
+python-docx
