@@ -75,6 +75,36 @@ def pdf_compress():
     sikistir_pdf(input_path, output_path, kalite_map.get(quality, "/ebook"))
     return send_file(output_path, as_attachment=True)
 
+@app.route("/pdf/to_word", methods=["POST"])
+def pdf_to_word_route():
+    file = request.files["pdf"]
+    tempdir = tempfile.mkdtemp()
+    input_path = os.path.join(tempdir, file.filename)
+    output_path = os.path.join(tempdir, "converted.docx")
+    file.save(input_path)
+    pdf_to_word(input_path, output_path)
+    return send_file(output_path, as_attachment=True)
+
+@app.route("/pdf/to_word_ocr", methods=["POST"])
+def pdf_to_word_ocr_route():
+    file = request.files["pdf"]
+    tempdir = tempfile.mkdtemp()
+    input_path = os.path.join(tempdir, file.filename)
+    output_path = os.path.join(tempdir, "ocr.docx")
+    file.save(input_path)
+    pdf_ocr_to_word(input_path, output_path)
+    return send_file(output_path, as_attachment=True)
+
+@app.route("/word/to_pdf", methods=["POST"])
+def word_to_pdf_route():
+    file = request.files["word"]
+    tempdir = tempfile.mkdtemp()
+    input_path = os.path.join(tempdir, file.filename)
+    output_path = os.path.join(tempdir, "converted.pdf")
+    file.save(input_path)
+    word_to_pdf(input_path, output_path)
+    return send_file(output_path, as_attachment=True)
+
 @app.route("/video/youtube", methods=["POST"])
 def youtube_download():
     url = request.form["url"]
