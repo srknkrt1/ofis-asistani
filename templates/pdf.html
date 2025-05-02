@@ -24,27 +24,43 @@
     form {
       background: white;
       border-radius: 12px;
-      padding: 20px;
+      padding: 20px 40px;
       margin: 20px auto;
       max-width: 600px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      text-align: left;
     }
 
-    input, select {
-      margin: 8px;
+    h3 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .desc {
+      color: #555;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    input[type="file"], input[type="number"], select {
+      display: block;
+      margin-bottom: 15px;
       padding: 10px;
-      width: 80%;
+      width: 100%;
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 15px;
     }
 
     input[type="submit"] {
-      width: auto;
       background: #3498db;
       color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
       cursor: pointer;
-      transition: 0.3s ease;
+      transition: background 0.3s;
     }
 
     input[type="submit"]:hover {
@@ -57,45 +73,53 @@
   <header>📄 PDF İşlemleri</header>
 
   <form action="/pdf/merge" method="post" enctype="multipart/form-data">
-    <h3>PDF Birleştir</h3>
-    <input type="file" name="pdfs" multiple required accept=".pdf"><br>
+    <h3>📎 PDF Birleştir</h3>
+    <div class="desc">Birden fazla PDF dosyasını tek dosyada birleştirin.</div>
+    <input type="file" name="pdfs" multiple required accept=".pdf">
     <input type="submit" value="PDF'leri Birleştir">
   </form>
 
   <form action="/pdf/split" method="post" enctype="multipart/form-data">
-    <h3>PDF Böl</h3>
-    <input type="file" name="pdf" required><br>
-    Başlangıç: <input type="number" name="start" min="1" required><br>
-    Bitiş: <input type="number" name="end" min="1" required><br>
+    <h3>✂️ PDF Böl</h3>
+    <div class="desc">PDF'in belirli sayfalarını ayırarak yeni bir dosya oluşturun.</div>
+    <input type="file" name="pdf" required>
+    Başlangıç Sayfası:
+    <input type="number" name="start" min="1" required>
+    Bitiş Sayfası:
+    <input type="number" name="end" min="1" required>
     <input type="submit" value="PDF Böl">
   </form>
 
   <form action="/pdf/rotate" method="post" enctype="multipart/form-data">
-    <h3>PDF Döndür</h3>
-    <input type="file" name="pdf" required><br>
-    Sayfa Numarası: <input type="number" name="page" min="1" required><br>
-    Açı (90/180/270): <input type="number" name="angle" required><br>
-    <input type="submit" value="Döndür">
+    <h3>⟳ PDF Döndür</h3>
+    <div class="desc">PDF dosyasındaki belirli bir sayfayı 90, 180 veya 270 derece döndürün.</div>
+    <input type="file" name="pdf" required>
+    Sayfa Numarası:
+    <input type="number" name="page" min="1" required>
+    Açı (90 / 180 / 270):
+    <input type="number" name="angle" required>
+    <input type="submit" value="PDF Döndür">
   </form>
 
   <form action="/pdf/compress" method="post" enctype="multipart/form-data">
-    <h3>PDF Sıkıştır</h3>
-    <input type="file" name="pdf" required><br>
-    Kalite Seçin:
+    <h3>🗜️ PDF Sıkıştır</h3>
+    <div class="desc">PDF dosyanızın boyutunu küçültün. Kalite seviyesini seçebilirsiniz.</div>
+    <input type="file" name="pdf" required>
+    Kalite:
     <select name="quality">
       <option value="ekstrem">Ekstrem</option>
       <option value="düşük">Düşük</option>
       <option value="orta" selected>Orta</option>
       <option value="yüksek">Yüksek</option>
-    </select><br>
+    </select>
     <input type="submit" value="Sıkıştır">
   </form>
 
   <form action="/pdf/pdf2word" method="post" enctype="multipart/form-data">
-    <h3>PDF to Word</h3>
-    <input type="file" name="pdf" required><br>
+    <h3>📤 PDF to Word</h3>
+    <div class="desc">PDF dosyasını düzenlenebilir bir Word belgesine dönüştürün.</div>
+    <input type="file" name="pdf" required>
     <input type="submit" value="Dönüştür">
   </form>
-
 </body>
 </html>
