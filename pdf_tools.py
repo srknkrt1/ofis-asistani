@@ -1,6 +1,5 @@
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from pdf2docx import Converter
-from docx2pdf import convert
 from pdf2image import convert_from_path
 from docx import Document
 import pytesseract
