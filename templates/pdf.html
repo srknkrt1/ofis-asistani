@@ -32,4 +32,70 @@
 
     input, select {
       margin: 8px;
-      padding:
+      padding: 10px;
+      width: 80%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    input[type="submit"] {
+      width: auto;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+  <header>📄 PDF İşlemleri</header>
+
+  <form action="/pdf/merge" method="post" enctype="multipart/form-data">
+    <h3>PDF Birleştir</h3>
+    <input type="file" name="pdfs" multiple required accept=".pdf"><br>
+    <input type="submit" value="PDF'leri Birleştir">
+  </form>
+
+  <form action="/pdf/split" method="post" enctype="multipart/form-data">
+    <h3>PDF Böl</h3>
+    <input type="file" name="pdf" required><br>
+    Başlangıç: <input type="number" name="start" min="1" required><br>
+    Bitiş: <input type="number" name="end" min="1" required><br>
+    <input type="submit" value="PDF Böl">
+  </form>
+
+  <form action="/pdf/rotate" method="post" enctype="multipart/form-data">
+    <h3>PDF Döndür</h3>
+    <input type="file" name="pdf" required><br>
+    Sayfa Numarası: <input type="number" name="page" min="1" required><br>
+    Açı (90/180/270): <input type="number" name="angle" required><br>
+    <input type="submit" value="Döndür">
+  </form>
+
+  <form action="/pdf/compress" method="post" enctype="multipart/form-data">
+    <h3>PDF Sıkıştır</h3>
+    <input type="file" name="pdf" required><br>
+    Kalite Seçin:
+    <select name="quality">
+      <option value="ekstrem">Ekstrem</option>
+      <option value="düşük">Düşük</option>
+      <option value="orta" selected>Orta</option>
+      <option value="yüksek">Yüksek</option>
+    </select><br>
+    <input type="submit" value="Sıkıştır">
+  </form>
+
+  <form action="/pdf/pdf2word" method="post" enctype="multipart/form-data">
+    <h3>PDF to Word</h3>
+    <input type="file" name="pdf" required><br>
+    <input type="submit" value="Dönüştür">
+  </form>
+
+</body>
+</html>
