@@ -3,99 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <title>PDF İşlemleri</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f4f7fa;
+      display: flex;
       margin: 0;
-      padding: 0;
-      text-align: center;
+      font-family: Arial, sans-serif;
     }
 
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 25px 0;
-      font-size: 28px;
+    .sidebar {
+      width: 200px;
+      background: #f0f2f5;
+      padding-top: 20px;
+      height: 100vh;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 15px;
+      color: #333;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background: #fff;
+      border-left: 4px solid #007bff;
       font-weight: bold;
     }
 
-    form {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 600px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-
-    input, select {
-      margin: 8px;
-      padding: 10px;
-      width: 80%;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-
-    input[type="submit"] {
-      width: auto;
-      background: #3498db;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s ease;
-    }
-
-    input[type="submit"]:hover {
-      background: #2980b9;
+    .content {
+      flex-grow: 1;
+      padding: 40px;
+      background: #fff;
     }
   </style>
 </head>
 <body>
 
-  <header>📄 PDF İşlemleri</header>
+  <div class="sidebar">
+    <a href="/pdf/split" class="{{ 'active' if active == 'split' else '' }}">Split PDF</a>
+    <a href="/pdf/merge" class="{{ 'active' if active == 'merge' else '' }}">Merge PDF</a>
+    <a href="/pdf/compress" class="{{ 'active' if active == 'compress' else '' }}">Compress PDF</a>
+    <a href="/pdf/rotate" class="{{ 'active' if active == 'rotate' else '' }}">Rotate PDF</a>
+    <a href="/pdf/pdf2word" class="{{ 'active' if active == 'pdf2word' else '' }}">PDF to Word</a>
+    <a href="/">← Geri</a>
+  </div>
 
-  <form action="/pdf/merge" method="post" enctype="multipart/form-data">
-    <h3>PDF Birleştir</h3>
-    <input type="file" name="pdfs" multiple required accept=".pdf"><br>
-    <input type="submit" value="PDF'leri Birleştir">
-  </form>
-
-  <form action="/pdf/split" method="post" enctype="multipart/form-data">
-    <h3>PDF Böl</h3>
-    <input type="file" name="pdf" required><br>
-    Başlangıç: <input type="number" name="start" min="1" required><br>
-    Bitiş: <input type="number" name="end" min="1" required><br>
-    <input type="submit" value="PDF Böl">
-  </form>
-
-  <form action="/pdf/rotate" method="post" enctype="multipart/form-data">
-    <h3>PDF Döndür</h3>
-    <input type="file" name="pdf" required><br>
-    Sayfa Numarası: <input type="number" name="page" min="1" required><br>
-    Açı (90/180/270): <input type="number" name="angle" required><br>
-    <input type="submit" value="Döndür">
-  </form>
-
-  <form action="/pdf/compress" method="post" enctype="multipart/form-data">
-    <h3>PDF Sıkıştır</h3>
-    <input type="file" name="pdf" required><br>
-    Kalite Seçin:
-    <select name="quality">
-      <option value="ekstrem">Ekstrem</option>
-      <option value="düşük">Düşük</option>
-      <option value="orta" selected>Orta</option>
-      <option value="yüksek">Yüksek</option>
-    </select><br>
-    <input type="submit" value="Sıkıştır">
-  </form>
-
-  <form action="/pdf/pdf2word" method="post" enctype="multipart/form-data">
-    <h3>PDF to Word</h3>
-    <input type="file" name="pdf" required><br>
-    <input type="submit" value="Dönüştür">
-  </form>
+  <div class="content">
+    {% block content %}
+    <!-- Buraya her işlemin formu eklenecek -->
+    {% endblock %}
+  </div>
 
 </body>
 </html>
