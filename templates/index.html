@@ -1,10 +1,78 @@
 <!DOCTYPE html>
-<html>
-<head><title>Ofis Asistanı</title></head>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ofis Asistanı</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 30px 0;
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 20px 40px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      border-radius: 15px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #2980b9;
+    }
+
+    footer {
+      margin-top: 80px;
+      padding: 20px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .button {
+        width: 80%;
+      }
+    }
+  </style>
+</head>
 <body>
-<h1>📁 Ofis Asistanı</h1>
-<a href="/pdf">PDF İşlemleri</a><br>
-<a href="/video">Video İndirme</a><br>
-<a href="/transkript">Transkript</a><br>
+
+  <header>Ofis Asistanı</header>
+
+  <div class="container">
+    <a href="/pdf" class="button">📄 PDF İşlemleri</a>
+    <a href="/video" class="button">🎬 Video İndirme</a>
+    <a href="/transkript" class="button">📝 Transkript</a>
+  </div>
+
+  <footer>
+    Bu uygulama şu anda <strong>deneme</strong> sürecindedir. VPS sunucuya taşındığında <strong>video indirme</strong> ve <strong>transkript</strong> özellikleri aktif olacaktır.
+  </footer>
+
 </body>
 </html>
