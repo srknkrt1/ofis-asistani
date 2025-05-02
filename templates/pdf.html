@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>PDF Araçları - Ofis Asistanı</title>
+  <title>PDF İşlemleri - Ofis Asistanı</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * {
@@ -15,22 +15,34 @@
     body {
       display: flex;
       min-height: 100vh;
-      background: #f4f7fa;
+      background: linear-gradient(to right, #e0eafc, #cfdef3);
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: #2e3a59;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
     }
 
     .sidebar {
+      margin-top: 60px;
       width: 220px;
       background: #2e3a59;
       color: white;
       padding: 20px;
-    }
-
-    .sidebar h2 {
-      margin-bottom: 30px;
-      font-size: 20px;
-      text-align: center;
-      border-bottom: 1px solid #444;
-      padding-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .menu-item {
@@ -48,6 +60,7 @@
 
     .content {
       flex: 1;
+      margin-top: 60px;
       padding: 40px;
     }
 
@@ -77,29 +90,55 @@
       border: 1px solid #ccc;
     }
 
-    input[type="submit"] {
+    input[type="submit"], .rotate-btn {
       width: auto;
       background: #3498db;
       color: white;
       border: none;
       cursor: pointer;
       transition: 0.3s;
+      padding: 10px 20px;
     }
 
-    input[type="submit"]:hover {
+    input[type="submit"]:hover, .rotate-btn:hover {
       background: #2980b9;
+    }
+
+    .back-btn {
+      margin-top: 40px;
+      padding: 8px 14px;
+      background: #bdc3c7;
+      color: black;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #95a5a6;
     }
   </style>
 </head>
 <body>
 
+  <header>
+    PDF İşlemleri
+  </header>
+
   <div class="sidebar">
-    <h2>PDF Araçları</h2>
-    <div class="menu-item active" onclick="showSection('split')">📄 PDF Böl</div>
-    <div class="menu-item" onclick="showSection('merge')">📎 PDF Birleştir</div>
-    <div class="menu-item" onclick="showSection('rotate')">⟳ PDF Döndür</div>
-    <div class="menu-item" onclick="showSection('compress')">🗜️ PDF Sıkıştır</div>
-    <div class="menu-item" onclick="showSection('pdf2word')">📤 PDF to Word</div>
+    <div>
+      <div class="menu-item active" onclick="showSection('split')">📄 PDF Böl</div>
+      <div class="menu-item" onclick="showSection('merge')">📎 PDF Birleştir</div>
+      <div class="menu-item" onclick="showSection('rotate')">⟳ PDF Döndür</div>
+      <div class="menu-item" onclick="showSection('compress')">🗜️ PDF Sıkıştır</div>
+      <div class="menu-item" onclick="showSection('pdf2word')">📤 PDF to Word</div>
+    </div>
+
+    <a href="/" style="text-align: center; text-decoration: none;">
+      <button class="back-btn">← Ana Sayfaya Dön</button>
+    </a>
   </div>
 
   <div class="content">
@@ -107,7 +146,6 @@
       <!-- PDF Böl -->
       <div id="split">
         <h3>📄 PDF Böl</h3>
-        <p>Bu bölümde PDF dosyanızın belirli sayfalarını ayırabilirsiniz.</p>
         <form action="/pdf/split" method="post" enctype="multipart/form-data">
           <input type="file" name="pdf" required>
           <input type="number" name="start" placeholder="Başlangıç Sayfası" min="1" required>
@@ -119,7 +157,6 @@
       <!-- PDF Birleştir -->
       <div id="merge" style="display:none;">
         <h3>📎 PDF Birleştir</h3>
-        <p>Birden fazla PDF dosyasını tek bir dosyada birleştirin.</p>
         <form action="/pdf/merge" method="post" enctype="multipart/form-data">
           <input type="file" name="pdfs" multiple required accept=".pdf">
           <input type="submit" value="PDF'leri Birleştir">
@@ -129,11 +166,11 @@
       <!-- PDF Döndür -->
       <div id="rotate" style="display:none;">
         <h3>⟳ PDF Döndür</h3>
-        <p>Seçtiğiniz sayfayı 90, 180 veya 270 derece döndürün.</p>
-        <form action="/pdf/rotate" method="post" enctype="multipart/form-data">
+        <form id="rotate-form" action="/pdf/rotate" method="post" enctype="multipart/form-data">
           <input type="file" name="pdf" required>
-          <input type="number" name="page" placeholder="Sayfa Numarası" required>
-          <input type="number" name="angle" placeholder="Döndürme Açısı (90/180/270)" required>
+          <input type="number" name="page" placeholder="Sayfa Numarası" min="1" required>
+          <input type="hidden" name="angle" id="angle" value="90">
+          <button type="button" class="rotate-btn" onclick="increaseAngle()">⟳ Döndür (90°)</button>
           <input type="submit" value="PDF Döndür">
         </form>
       </div>
@@ -141,7 +178,6 @@
       <!-- PDF Sıkıştır -->
       <div id="compress" style="display:none;">
         <h3>🗜️ PDF Sıkıştır</h3>
-        <p>PDF dosyanızın boyutunu küçültün.</p>
         <form action="/pdf/compress" method="post" enctype="multipart/form-data">
           <input type="file" name="pdf" required>
           <select name="quality">
@@ -157,7 +193,6 @@
       <!-- PDF to Word -->
       <div id="pdf2word" style="display:none;">
         <h3>📤 PDF to Word</h3>
-        <p>PDF dosyasını düzenlenebilir Word belgesine dönüştürün.</p>
         <form action="/pdf/pdf2word" method="post" enctype="multipart/form-data">
           <input type="file" name="pdf" required>
           <input type="submit" value="Dönüştür">
@@ -174,6 +209,14 @@
       menuItems.forEach(i => i.classList.remove('active'));
       document.getElementById(id).style.display = 'block';
       event.target.classList.add('active');
+    }
+
+    function increaseAngle() {
+      const angleInput = document.getElementById("angle");
+      let currentAngle = parseInt(angleInput.value) || 0;
+      currentAngle = (currentAngle + 90) % 360;
+      angleInput.value = currentAngle;
+      alert(`Döndürme açısı ${currentAngle}° olarak ayarlandı.`);
     }
   </script>
 
