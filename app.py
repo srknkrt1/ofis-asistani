@@ -3,6 +3,7 @@ from pdf_tools import birlestir_pdf_listesi
 from pdf_tools import bol_pdf
 from pdf_tools import dondur_pdf
 from pdf_tools import sikistir_pdf
+from video_tools import indir_video
 import os, tempfile
 
 app = Flask(__name__)
@@ -84,6 +85,13 @@ def pdf_compress():
     }
     sikistir_pdf(input_path, output_path, kalite_map.get(kalite, "/ebook"))
     return send_file(output_path, as_attachment=True)
+
+@app.route("/video/youtube", methods=["POST"])
+def youtube_download():
+    url = request.form["url"]
+    secenek = request.form["type"]
+    indir_video(url, secenek)
+    return "İndirme başlatıldı. Sunucudan kontrol edin.<br><a href='/'>← Geri</a>"
 
 if __name__ == "__main__":
     app.run(debug=True)
