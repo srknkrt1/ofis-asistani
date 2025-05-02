@@ -7,3 +7,4 @@ PyPDF2
 pdf2image
 yt_dlp
 python-docx
+gunicorn
