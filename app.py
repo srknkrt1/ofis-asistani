@@ -75,25 +75,5 @@ def pdf2word():
     pdf_to_word(input_path, output_path)
     return send_file(output_path, as_attachment=True)
 
-@app.route("/pdf/pdf2wordocr", methods=["POST"])
-def pdf2wordocr():
-    f = request.files["pdf"]
-    tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, f.filename)
-    output_path = os.path.join(tempdir, "ocr.docx")
-    f.save(input_path)
-    pdf_to_word_ocr(input_path, output_path)
-    return send_file(output_path, as_attachment=True)
-
-@app.route("/pdf/word2pdf", methods=["POST"])
-def word2pdf():
-    f = request.files["docx"]
-    tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, f.filename)
-    output_path = os.path.join(tempdir, "converted.pdf")
-    f.save(input_path)
-    word_to_pdf(input_path, output_path)
-    return send_file(output_path, as_attachment=True)
-
 if __name__ == "__main__":
     app.run(debug=True)
