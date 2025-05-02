@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, send_file
 from pdf_tools import birlestir_pdf_listesi
+from pdf_tools import bol_pdf
+from pdf_tools import dondur_pdf
+from pdf_tools import sikistir_pdf
 import os, tempfile
 
 app = Flask(__name__)
@@ -35,3 +38,52 @@ def pdf_merge():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/pdf/split", methods=["POST"])
+def pdf_split():
+    file = request.files["pdf"]
+    bas = int(request.form["start"])
+    bit = int(request.form["end"])
+
+    tempdir = tempfile.mkdtemp()
+    input_path = os.path.join(tempdir, file.filename)
+    file.save(input_path)
+
+    output_path = os.path.join(tempdir, "split.pdf")
+    bol_pdf(input_path, bas, bit, output_path)
+
+    return send_file(output_path, as_attachment=True)
+
+@app.route("/pdf/rotate", methods=["POST"])
+def pdf_rotate():
+    file = request.files["pdf"]
+    sayfa_no = int(request.form["page"])
+    aci = int(request.form["angle"])
+
+    tempdir = tempfile.mkdtemp()
+    input_path = os.path.join(tempdir, file.filename)
+    file.save(input_path)
+
+    output_path = os.path.join(tempdir, "rotated.pdf")
+    dondur_pdf(input_path, sayfa_no, aci, output_path)
+
+    return send_file(output_path, as_attachment=True)
+
+@app.route("/pdf/compress", methods=["POST"])
+def pdf_compress():
+    file = request.files["pdf"]
+    kalite = request.form["quality"]
+
+    tempdir = tempfile.mkdtemp()
+    input_path = os.path.join(tempdir, file.filename)
+    output_path = os.path.join(tempdir, "compressed.pdf")
+    file.save(input_path)
+
+    kalite_map = {
+        "ekstrem": "/screen",
+        "düşük": "/ebook",
+        "orta": "/printer",
+        "yüksek": "/prepress"
+    }
+    sikistir_pdf(input_path, output_path, kalite_map.get(kalite, "/ebook"))
+    return send_file(output_path, as_attachment=True)
