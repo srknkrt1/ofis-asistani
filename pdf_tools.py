@@ -44,15 +44,3 @@ def pdf_to_word(input_pdf, output_docx):
     cv.convert(output_docx)
     cv.close()
 
-def pdf_to_word_ocr(input_pdf, output_docx):
-    images = convert_from_path(input_pdf)
-    doc = Document()
-    for i, img in enumerate(images, 1):
-        text = pytesseract.image_to_string(img, lang="tur+eng")
-        doc.add_paragraph(f"--- Sayfa {i} ---")
-        doc.add_paragraph(text)
-        doc.add_page_break()
-    doc.save(output_docx)
-
-def word_to_pdf(input_docx, output_pdf):
-    convert(input_docx, output_pdf)
