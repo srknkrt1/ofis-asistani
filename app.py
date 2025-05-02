@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, send_file
-from pdf_tools import birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf
-from video_tools import indir_video
-import tempfile, os
+import os, tempfile
+from pdf_tools import (
+    birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf,
+    pdf_to_word, pdf_to_word_ocr, word_to_pdf
+)
 
 app = Flask(__name__)
 
@@ -13,107 +15,85 @@ def index():
 def pdf():
     return render_template("pdf.html")
 
-@app.route("/video")
-def video():
-    return render_template("video.html")
-
-@app.route("/transkript")
-def transkript():
-    return render_template("transkript.html")
-
 @app.route("/pdf/merge", methods=["POST"])
 def pdf_merge():
     files = request.files.getlist("pdfs")
     tempdir = tempfile.mkdtemp()
-    input_paths = []
-    for file in files:
-        path = os.path.join(tempdir, file.filename)
-        file.save(path)
-        input_paths.append(path)
-    output_path = os.path.join(tempdir, "merged.pdf")
-    birlestir_pdf_listesi(input_paths, output_path)
-    return send_file(output_path, as_attachment=True)
+    paths = [os.path.join(tempdir, f.filename) for f in files]
+    for f, p in zip(files, paths):
+        f.save(p)
+    output = os.path.join(tempdir, "merged.pdf")
+    birlestir_pdf_listesi(paths, output)
+    return send_file(output, as_attachment=True)
 
 @app.route("/pdf/split", methods=["POST"])
 def pdf_split():
-    file = request.files["pdf"]
-    start = int(request.form["start"])
-    end = int(request.form["end"])
+    f = request.files["pdf"]
+    bas = int(request.form["start"])
+    bit = int(request.form["end"])
     tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, file.filename)
-    file.save(input_path)
-    output_path = os.path.join(tempdir, "split.pdf")
-    bol_pdf(input_path, start, end, output_path)
-    return send_file(output_path, as_attachment=True)
+    path = os.path.join(tempdir, f.filename)
+    f.save(path)
+    output = os.path.join(tempdir, "split.pdf")
+    bol_pdf(path, bas, bit, output)
+    return send_file(output, as_attachment=True)
 
 @app.route("/pdf/rotate", methods=["POST"])
 def pdf_rotate():
-    file = request.files["pdf"]
-    page = int(request.form["page"])
-    angle = int(request.form["angle"])
+    f = request.files["pdf"]
+    sayfa = int(request.form["page"])
+    aci = int(request.form["angle"])
     tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, file.filename)
-    file.save(input_path)
-    output_path = os.path.join(tempdir, "rotated.pdf")
-    dondur_pdf(input_path, page, angle, output_path)
-    return send_file(output_path, as_attachment=True)
+    path = os.path.join(tempdir, f.filename)
+    f.save(path)
+    output = os.path.join(tempdir, "rotated.pdf")
+    dondur_pdf(path, sayfa, aci, output)
+    return send_file(output, as_attachment=True)
 
 @app.route("/pdf/compress", methods=["POST"])
 def pdf_compress():
-    file = request.files["pdf"]
-    quality = request.form["quality"]
-    tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, file.filename)
-    output_path = os.path.join(tempdir, "compressed.pdf")
-    file.save(input_path)
+    f = request.files["pdf"]
+    kalite = request.form["quality"]
     kalite_map = {
-        "ekstrem": "/screen",
-        "düşük": "/ebook",
-        "orta": "/printer",
-        "yüksek": "/prepress"
+        "ekstrem": "/screen", "düşük": "/ebook",
+        "orta": "/printer", "yüksek": "/prepress"
     }
-    sikistir_pdf(input_path, output_path, kalite_map.get(quality, "/ebook"))
-    return send_file(output_path, as_attachment=True)
-
-@app.route("/pdf/to_word", methods=["POST"])
-def pdf_to_word_route():
-    file = request.files["pdf"]
     tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, file.filename)
+    path = os.path.join(tempdir, f.filename)
+    f.save(path)
+    output = os.path.join(tempdir, "compressed.pdf")
+    sikistir_pdf(path, output, kalite_map.get(kalite, "/ebook"))
+    return send_file(output, as_attachment=True)
+
+@app.route("/pdf/pdf2word", methods=["POST"])
+def pdf2word():
+    f = request.files["pdf"]
+    tempdir = tempfile.mkdtemp()
+    input_path = os.path.join(tempdir, f.filename)
     output_path = os.path.join(tempdir, "converted.docx")
-    file.save(input_path)
+    f.save(input_path)
     pdf_to_word(input_path, output_path)
     return send_file(output_path, as_attachment=True)
 
-@app.route("/pdf/to_word_ocr", methods=["POST"])
-def pdf_to_word_ocr_route():
-    file = request.files["pdf"]
+@app.route("/pdf/pdf2wordocr", methods=["POST"])
+def pdf2wordocr():
+    f = request.files["pdf"]
     tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, file.filename)
+    input_path = os.path.join(tempdir, f.filename)
     output_path = os.path.join(tempdir, "ocr.docx")
-    file.save(input_path)
-    pdf_ocr_to_word(input_path, output_path)
+    f.save(input_path)
+    pdf_to_word_ocr(input_path, output_path)
     return send_file(output_path, as_attachment=True)
 
-@app.route("/word/to_pdf", methods=["POST"])
-def word_to_pdf_route():
-    file = request.files["word"]
+@app.route("/pdf/word2pdf", methods=["POST"])
+def word2pdf():
+    f = request.files["docx"]
     tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, file.filename)
+    input_path = os.path.join(tempdir, f.filename)
     output_path = os.path.join(tempdir, "converted.pdf")
-    file.save(input_path)
+    f.save(input_path)
     word_to_pdf(input_path, output_path)
     return send_file(output_path, as_attachment=True)
-
-@app.route("/video/youtube", methods=["POST"])
-def youtube_download():
-    url = request.form["url"]
-    secenek = request.form["type"]
-    try:
-        indir_video(url, secenek)
-        return "İndirme işlemi başlatıldı. Sunucu klasörüne indirildi."
-    except Exception as e:
-        return f"Hata oluştu: {str(e)}", 500
 
 if __name__ == "__main__":
     app.run(debug=True)
