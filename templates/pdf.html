@@ -1,60 +1,35 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>PDF Araçları</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; background: #f4f4f4; padding: 2em; }
-        h2 { background: #3f51b5; color: white; padding: 10px; border-radius: 4px; }
-        form { background: white; padding: 1em; margin-bottom: 2em; border-radius: 4px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input, select { margin-top: 5px; margin-bottom: 10px; padding: 5px; width: 100%; }
-        input[type="submit"] { background: #3f51b5; color: white; border: none; cursor: pointer; }
-        input[type="submit"]:hover { background: #303f9f; }
-        a { display: inline-block; margin-top: 20px; text-decoration: none; color: #333; }
-    </style>
-</head>
-<body>
-    <h2>📄 PDF Birleştir</h2>
-    <form action="/pdf/merge" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdfs" multiple required><br>
-        <input type="submit" value="Birleştir">
-    </form>
+  <meta charset="UTF-8">
+  <title>PDF İşlemleri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
 
-    <h2>✂️ PDF Böl</h2>
-    <form action="/pdf/split" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdf" required><br>
-        Başlangıç Sayfası: <input type="number" name="start" min="1" required><br>
-        Bitiş Sayfası: <input type="number" name="end" min="1" required><br>
-        <input type="submit" value="Böl">
-    </form>
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 25px 0;
+      font-size: 28px;
+      font-weight: bold;
+    }
 
-    <h2>⟳ PDF Döndür</h2>
-    <form action="/pdf/rotate" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdf" required><br>
-        Sayfa No: <input type="number" name="page" min="1" required><br>
-        Açı (90,180,270): <input type="number" name="angle" required><br>
-        <input type="submit" value="Döndür">
-    </form>
+    form {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 600px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
 
-    <h2>🗜️ PDF Sıkıştır</h2>
-    <form action="/pdf/compress" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdf" required><br>
-        Kalite: 
-        <select name="quality">
-            <option value="ekstrem">Ekstrem</option>
-            <option value="düşük">Düşük</option>
-            <option value="orta">Orta</option>
-            <option value="yüksek">Yüksek</option>
-        </select><br>
-        <input type="submit" value="Sıkıştır">
-    </form>
-
-    <h2>📄 PDF to Word</h2>
-    <form action="/pdf/pdf2word" method="post" enctype="multipart/form-data">
-        <input type="file" name="pdf" required><br>
-        <input type="submit" value="Dönüştür">
-    </form>
-
-    <a href="/">← Anasayfa</a>
-</body>
-</html>
+    input, select {
+      margin: 8px;
+      padding:
