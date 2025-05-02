@@ -15,6 +15,14 @@ def index():
 def pdf():
     return render_template("pdf.html")
 
+@app.route("/video")
+def video():
+    return render_template("video.html")
+
+@app.route("/transkript")
+def transkript():
+    return render_template("transkript.html")
+
 @app.route("/pdf/merge", methods=["POST"])
 def pdf_merge():
     files = request.files.getlist("pdfs")
