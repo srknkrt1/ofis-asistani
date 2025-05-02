@@ -1,5 +1,10 @@
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 import subprocess
+from pdf2docx import Converter
+from docx2pdf import convert
+import pytesseract
+from pdf2image import convert_from_path
+from docx import Document
 
 def birlestir_pdf_listesi(pdf_filepaths, cikti_yolu):
     merger = PdfMerger()
@@ -33,3 +38,22 @@ def sikistir_pdf(giris_pdf, cikti_pdf, kalite="/ebook"):
         f"-dPDFSETTINGS={kalite}", "-dNOPAUSE", "-dQUIET", "-dBATCH",
         f"-sOutputFile={cikti_pdf}", giris_pdf
     ])
+
+def pdf_to_word(giris_pdf, cikti_docx):
+    cv = Converter(giris_pdf)
+    cv.convert(cikti_docx)
+    cv.close()
+
+def word_to_pdf(giris_docx, cikti_pdf):
+    convert(giris_docx, cikti_pdf)
+
+def pdf_ocr_to_word(pdf_path, output_docx):
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+    pages = convert_from_path(pdf_path)
+    doc = Document()
+    for i, page in enumerate(pages, 1):
+        text = pytesseract.image_to_string(page, lang="tur+eng")
+        doc.add_paragraph(f"--- Sayfa {i} ---")
+        doc.add_paragraph(text)
+        doc.add_page_break()
+    doc.save(output_docx)
