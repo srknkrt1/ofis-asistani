@@ -31,16 +31,33 @@ def video():
 def transkript():
     return render_template("transkript.html")
 
-@app.route("/pdf/merge", methods=["POST"])
-def pdf_merge():
-    files = request.files.getlist("pdfs")
-    tempdir = tempfile.mkdtemp()
-    paths = [os.path.join(tempdir, f.filename) for f in files]
-    for f, p in zip(files, paths):
-        f.save(p)
-    output = os.path.join(tempdir, "merged.pdf")
-    birlestir_pdf_listesi(paths, output)
-    return send_file(output, as_attachment=True)
+@app.route('/pdf/merge', methods=['POST'])
+def merge_pdfs():
+    uploaded_files = request.files.getlist('pdfs')
+    order = request.form.getlist('order[]')
+
+    if not uploaded_files or not order:
+        return "Dosyalar veya sıralama eksik.", 400
+
+    try:
+        ordered_files = [uploaded_files[int(i)] for i in order]
+    except (ValueError, IndexError):
+        return "Geçersiz sıralama verisi.", 400
+
+    temp_paths = []
+    for file in ordered_files:
+        temp_path = os.path.join(UPLOAD_FOLDER, secure_filename(file.filename))
+        file.save(temp_path)
+        temp_paths.append(temp_path)
+
+    output_path = os.path.join(UPLOAD_FOLDER, f"merged_{uuid4().hex}.pdf")
+    birlestir_pdf_listesi(temp_paths, output_path)
+
+    # Geçici dosyaları temizle
+    for path in temp_paths:
+        os.remove(path)
+
+    return send_file(output_path, as_attachment=True)
 
 @app.route("/pdf/split", methods=["POST"])
 def pdf_split():
