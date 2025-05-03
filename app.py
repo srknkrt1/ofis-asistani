@@ -134,7 +134,15 @@ def submit_reorder():
     with open(output_path, 'wb') as f:
         writer.write(f)
 
-    return send_file(output_path, as_attachment=True)
+    # --- GEÇİCİ DOSYALARI TEMİZLEME ---
+    try:
+        os.remove(original_pdf_path)  # PDF dosyasını sil
+        for filename in os.listdir(IMAGE_FOLDER):
+            os.remove(os.path.join(IMAGE_FOLDER, filename))  # Resimleri sil
+    except Exception as e:
+        print("Silme hatası:", e)
+    # ----------------------------------
 
+    return send_file(output_path, as_attachment=True)
 if __name__ == "__main__":
     app.run(debug=True)
