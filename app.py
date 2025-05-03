@@ -1,11 +1,15 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect, url_for
 import os, tempfile
+import fitz  # PyMuPDF
+import uuid
 from pdf_tools import (
     birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf,
     pdf_to_word
 )
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/")
 def index():
@@ -82,6 +86,56 @@ def pdf2word():
     f.save(input_path)
     pdf_to_word(input_path, output_path)
     return send_file(output_path, as_attachment=True)
+
+@app.route('/')
+def index():
+    return redirect(url_for('reorder_pdf'))
+
+@app.route('/reorder', methods=['GET', 'POST'])
+def reorder_pdf():
+    if request.method == 'POST':
+        file = request.files['pdf']
+        if file.filename.endswith('.pdf'):
+            uid = str(uuid.uuid4())
+            filepath = os.path.join(UPLOAD_FOLDER, uid + '.pdf')
+            file.save(filepath)
+
+            # Sayfa sayısını kontrol et
+            doc = fitz.open(filepath)
+            total_pages = len(doc)
+            doc.close()
+
+            return render_template('reorder.html', file=uid + '.pdf', total=total_pages)
+
+    return '''
+        <h2>PDF Sayfa Sıralayıcı</h2>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="pdf" accept=".pdf" required>
+            <button type="submit">Yükle</button>
+        </form>
+    '''
+
+@app.route('/save_order', methods=['POST'])
+def save_order():
+    data = request.json
+    filename = data['filename']
+    new_order = data['order']  # ["0", "2", "1", ...]
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+    doc = fitz.open(filepath)
+    new_doc = fitz.open()
+
+    for i in new_order:
+        new_doc.insert_pdf(doc, from_page=int(i), to_page=int(i))
+
+    output_path = os.path.join(UPLOAD_FOLDER, 'reordered_' + filename)
+    new_doc.save(output_path)
+
+    return {'download_url': '/download/' + 'reordered_' + filename}
+
+@app.route('/download/<filename>')
+def download(filename):
+    return send_file(os.path.join(UPLOAD_FOLDER, filename), as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
