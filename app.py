@@ -119,28 +119,36 @@ def reorder_pdf():
     return render_template('reorder.html', images=None)
 @app.route('/pdf/reorder/submit', methods=['POST'])
 def submit_reorder():
-    order = request.form.getlist('order[]')  # DÜZELTİLDİ
+    order = request.form.getlist('order[]')
     original_pdf_path = request.form['pdf_path']
 
+    # Geçersiz veya boş değerleri filtrele + kontrol et
+    try:
+        page_indices = [int(i) for i in order if i.strip().isdigit()]
+    except ValueError:
+        return "Geçersiz sayfa sıralaması gönderildi", 400
+
+    # Dosya okuma ve yeniden yazma
     reader = PdfReader(original_pdf_path)
     writer = PdfWriter()
 
-    for index in order:
-        page_index = int(index)
-        writer.add_page(reader.pages[page_index])
+    for page_index in page_indices:
+        if 0 <= page_index < len(reader.pages):
+            writer.add_page(reader.pages[page_index])
+        else:
+            return f"Geçersiz sayfa indexi: {page_index}", 400
 
     output_path = os.path.join(UPLOAD_FOLDER, f"reordered_{uuid4().hex}.pdf")
     with open(output_path, 'wb') as f:
         writer.write(f)
 
-    # --- GEÇİCİ DOSYALARI TEMİZLEME ---
+    # Geçici dosyaları temizle
     try:
         os.remove(original_pdf_path)
         for filename in os.listdir(IMAGE_FOLDER):
             os.remove(os.path.join(IMAGE_FOLDER, filename))
     except Exception as e:
         print("Silme hatası:", e)
-    # ----------------------------------
 
     return send_file(output_path, as_attachment=True)
 if __name__ == "__main__":
