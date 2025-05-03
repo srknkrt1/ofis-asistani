@@ -29,7 +29,7 @@
   <h3 class="text-center mb-4">📄 PDF Sayfalarını Yeniden Sırala</h3>
 
   {% if images %}
-    <form action="/pdf/reorder/submit" method="post">
+    <form action="/pdf/reorder/submit" method="post" onsubmit="return updateOrder();">
       <div id="sortable" class="sortable-container">
         {% for img, index in images %}
           <div data-index="{{ index }}">
@@ -38,9 +38,9 @@
         {% endfor %}
       </div>
       <input type="hidden" name="pdf_path" value="{{ pdf_path }}">
-      <input type="hidden" id="order-input" name="order[]">
+      <input type="hidden" id="order-input" name="order">
       <div class="text-center mt-4">
-        <button type="submit" class="btn btn-success" onclick="updateOrder()">📥 PDF'yi İndir</button>
+        <button type="submit" class="btn btn-success">📥 PDF'yi İndir</button>
         <a href="/" class="btn btn-secondary ms-2">Ana Sayfa</a>
       </div>
     </form>
@@ -56,16 +56,15 @@
 
 <script src="{{ url_for('static', filename='sortable.min.js') }}"></script>
 <script>
-  const sortable = new Sortable(document.getElementById('sortable'), {
+  new Sortable(document.getElementById('sortable'), {
     animation: 150
   });
 
   function updateOrder() {
     const divs = document.querySelectorAll('#sortable div');
     const order = Array.from(divs).map(div => div.getAttribute('data-index'));
-    const orderInput = document.getElementById('order-input');
-    orderInput.setAttribute('name', 'order[]'); // for proper submission
-    orderInput.value = order.join(',');
+    document.getElementById('order-input').value = order.join(',');
+    return true;
   }
 </script>
 </body>
