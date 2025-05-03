@@ -51,6 +51,9 @@
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="pdf2word-tab" data-bs-toggle="tab" data-bs-target="#pdf2word" type="button" role="tab">📤 PDF to Word</button>
       </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="reorder-tab" data-bs-toggle="tab" data-bs-target="#reorder" type="button" role="tab">📑 Sırala</button>
+      </li>
     </ul>
 
     <div class="tab-content" id="pdfTabContent">
@@ -110,7 +113,16 @@
         </form>
       </div>
     </div>
-
+       <!-- PDF Sayfa Sıralama -->
+      <div class="tab-pane fade" id="reorder" role="tabpanel">
+        <h4>📑 PDF Sayfaları Sırala</h4>
+        <form action="/pdf/reorder" method="post" enctype="multipart/form-data">
+          <input class="form-control" type="file" name="pdf" required>
+          <button class="btn btn-primary mt-2" type="submit">Sayfaları Sırala</button>
+        </form>
+  <p class="mt-3 text-muted">PDF yüklendikten sonra sayfaları sürükleyerek sıralayabileceğiniz bir arayüz açılacak.</p>
+</div>
+    
     <div class="text-center mt-5">
       <a href="/" class="btn btn-outline-secondary">← Ana Sayfa</a>
     </div>
