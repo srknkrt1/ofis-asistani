@@ -54,8 +54,7 @@
   {% endif %}
 </div>
 
-<script src="{{ url_for('static', filename='sortable.min.js') }}"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   new Sortable(document.getElementById('sortable'), {
     animation: 150
   });
