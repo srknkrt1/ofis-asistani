@@ -117,10 +117,10 @@ def reorder_pdf():
         return render_template('reorder.html', images=image_filenames, pdf_path=filepath)
 
     return render_template('reorder.html', images=None)
-
 @app.route('/pdf/reorder/submit', methods=['POST'])
 def submit_reorder():
-    order = request.form.getlist('order[]')
+    order_str = request.form.get('order', '')
+    order = order_str.split(',') if order_str else []
     original_pdf_path = request.form['pdf_path']
 
     reader = PdfReader(original_pdf_path)
@@ -136,13 +136,14 @@ def submit_reorder():
 
     # --- GEÇİCİ DOSYALARI TEMİZLEME ---
     try:
-        os.remove(original_pdf_path)  # PDF dosyasını sil
+        os.remove(original_pdf_path)
         for filename in os.listdir(IMAGE_FOLDER):
-            os.remove(os.path.join(IMAGE_FOLDER, filename))  # Resimleri sil
+            os.remove(os.path.join(IMAGE_FOLDER, filename))
     except Exception as e:
         print("Silme hatası:", e)
     # ----------------------------------
 
     return send_file(output_path, as_attachment=True)
+
 if __name__ == "__main__":
     app.run(debug=True)
