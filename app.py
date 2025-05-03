@@ -92,7 +92,7 @@ def rotate_pdf():
 
     for i, page in enumerate(reader.pages):
         if start - 1 <= i <= end - 1:
-            page.rotate_clockwise(angle)
+            page = page.rotate(angle)
         writer.add_page(page)
 
     output_stream = BytesIO()
