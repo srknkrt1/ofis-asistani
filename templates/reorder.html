@@ -2,53 +2,71 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>PDF Sayfa Sırala</title>
-  <script src="/static/sortable.min.js"></script>
+  <title>PDF Sayfa Sıralama</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    #thumbnails { display: flex; gap: 10px; flex-wrap: wrap; }
-    .page { border: 1px solid #ccc; padding: 5px; cursor: move; }
-    .page img { width: 100px; }
-    button { margin-top: 20px; }
+    .sortable-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .sortable-container div {
+      border: 1px solid #ccc;
+      padding: 5px;
+      background: white;
+      cursor: grab;
+    }
+    .sortable-container img {
+      width: 150px;
+      height: auto;
+    }
   </style>
 </head>
-<body>
+<body class="bg-light">
 
-  <h2>Sayfaları Sürükle ve Sırala</h2>
-  <div id="thumbnails"></div>
+<div class="container mt-5">
+  <h3 class="text-center mb-4">📄 PDF Sayfalarını Yeniden Sırala</h3>
 
-  <button onclick="saveOrder()">Sıralamayı Kaydet</button>
-  <div id="downloadLink"></div>
+  {% if images %}
+    <form action="/pdf/reorder/submit" method="post">
+      <div id="sortable" class="sortable-container">
+        {% for img, index in images %}
+          <div data-index="{{ index }}">
+            <img src="{{ url_for('static', filename='temp_images/' + img) }}">
+          </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="pdf_path" value="{{ pdf_path }}">
+      <input type="hidden" id="order-input" name="order[]">
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-success" onclick="updateOrder()">📥 PDF'yi İndir</button>
+        <a href="/" class="btn btn-secondary ms-2">Ana Sayfa</a>
+      </div>
+    </form>
+  {% else %}
+    <form action="/pdf/reorder" method="post" enctype="multipart/form-data">
+      <input class="form-control mb-3" type="file" name="pdf" required>
+      <div class="text-center">
+        <button class="btn btn-primary" type="submit">PDF Yükle</button>
+      </div>
+    </form>
+  {% endif %}
+</div>
 
-  <script>
-    const filename = "{{ file }}";
-    const total = {{ total }};
-    const container = document.getElementById('thumbnails');
+<script src="{{ url_for('static', filename='sortable.min.js') }}"></script>
+<script>
+  const sortable = new Sortable(document.getElementById('sortable'), {
+    animation: 150
+  });
 
-    for (let i = 0; i < total; i++) {
-      const div = document.createElement('div');
-      div.className = 'page';
-      div.setAttribute('data-id', i);
-      div.innerHTML = `<img src="https://via.placeholder.com/100x140?text=Sayfa+${i+1}"><br>Sayfa ${i+1}`;
-      container.appendChild(div);
-    }
-
-    new Sortable(container, { animation: 150 });
-
-    function saveOrder() {
-      const order = [...container.children].map(el => el.getAttribute('data-id'));
-      fetch('/save_order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename, order })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('downloadLink').innerHTML = `
-          <a href="${data.download_url}" target="_blank">Yeni PDF'yi İndir</a>
-        `;
-      });
-    }
-  </script>
-
+  function updateOrder() {
+    const divs = document.querySelectorAll('#sortable div');
+    const order = Array.from(divs).map(div => div.getAttribute('data-index'));
+    const orderInput = document.getElementById('order-input');
+    orderInput.setAttribute('name', 'order[]'); // for proper submission
+    orderInput.value = order.join(',');
+  }
+</script>
 </body>
 </html>
