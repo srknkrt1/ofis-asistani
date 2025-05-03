@@ -71,17 +71,27 @@ def pdf_split():
     bol_pdf(path, bas, bit, output)
     return send_file(output, as_attachment=True)
 
-@app.route("/pdf/rotate", methods=["POST"])
-def pdf_rotate():
-    f = request.files["pdf"]
-    sayfa = int(request.form["page"])
-    aci = int(request.form["angle"])
-    tempdir = tempfile.mkdtemp()
-    path = os.path.join(tempdir, f.filename)
-    f.save(path)
-    output = os.path.join(tempdir, "rotated.pdf")
-    dondur_pdf(path, sayfa, aci, output)
-    return send_file(output, as_attachment=True)
+@app.route('/pdf/rotate', methods=['POST'])
+def rotate_pdf():
+    file = request.files['pdf']
+    angle = int(request.form['angle'])
+    pages_input = request.form['pages']  # örn: "2-5"
+
+    start, end = map(int, pages_input.split('-'))
+    reader = PdfReader(file)
+    writer = PdfWriter()
+
+    for i, page in enumerate(reader.pages):
+        if start - 1 <= i <= end - 1:
+            page.rotate(angle)
+        writer.add_page(page)
+
+    # PDF oluştur ve döndür
+    output_stream = BytesIO()
+    writer.write(output_stream)
+    output_stream.seek(0)
+
+    return send_file(output_stream, as_attachment=True, download_name='rotated.pdf')
 
 @app.route("/pdf/compress", methods=["POST"])
 def pdf_compress():
