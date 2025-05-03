@@ -4,6 +4,7 @@ import fitz  # PyMuPDF
 from werkzeug.utils import secure_filename
 from uuid import uuid4
 from PyPDF2 import PdfReader, PdfWriter
+from io import BytesIO
 from pdf_tools import (
     birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf,
     pdf_to_word
@@ -75,18 +76,25 @@ def pdf_split():
 def rotate_pdf():
     file = request.files['pdf']
     angle = int(request.form['angle'])
-    pages_input = request.form['pages']  # örn: "2-5"
+    pages_input = request.form['pages']  # örn: "1-3"
 
-    start, end = map(int, pages_input.split('-'))
+    try:
+        start, end = map(int, pages_input.strip().split('-'))
+    except ValueError:
+        return "Sayfa aralığı formatı hatalı. Örn: 1-3", 400
+
     reader = PdfReader(file)
     writer = PdfWriter()
+    num_pages = len(reader.pages)
+
+    if not (1 <= start <= end <= num_pages):
+        return f"Geçersiz sayfa aralığı. PDF {num_pages} sayfadan oluşuyor.", 400
 
     for i, page in enumerate(reader.pages):
         if start - 1 <= i <= end - 1:
-            page.rotate(angle)
+            page.rotate_clockwise(angle)
         writer.add_page(page)
 
-    # PDF oluştur ve döndür
     output_stream = BytesIO()
     writer.write(output_stream)
     output_stream.seek(0)
