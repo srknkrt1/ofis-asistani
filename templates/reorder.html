@@ -32,8 +32,9 @@
     <form action="/pdf/reorder/submit" method="post" onsubmit="return updateOrder();">
       <div id="sortable" class="sortable-container">
         {% for img, index in images %}
-          <div data-index="{{ index }}">
+          <div data-index="{{ index }}" class="text-center">
             <img src="{{ url_for('static', filename='temp_images/' + img) }}">
+            <div class="mt-1 text-muted small">Sayfa {{ index + 1 }}</div>
           </div>
         {% endfor %}
       </div>
