@@ -31,16 +31,31 @@ def video():
 def transkript():
     return render_template("transkript.html")
 
-@app.route("/pdf/merge", methods=["POST"])
-def pdf_merge():
-    files = request.files.getlist("pdfs")
-    tempdir = tempfile.mkdtemp()
-    paths = [os.path.join(tempdir, f.filename) for f in files]
-    for f, p in zip(files, paths):
-        f.save(p)
-    output = os.path.join(tempdir, "merged.pdf")
-    birlestir_pdf_listesi(paths, output)
-    return send_file(output, as_attachment=True)
+@app.route('/pdf/merge/submit', methods=['POST'])
+def merge_submit():
+    files = request.files.getlist('pdfs')
+    order = request.form.getlist('order[]')
+
+    if not files or not order:
+        return "Dosyalar veya sıralama eksik", 400
+
+    try:
+        ordered_files = [files[int(i)] for i in order]
+    except (ValueError, IndexError):
+        return "Sıralama hatalı", 400
+
+    merger = PdfWriter()
+
+    for file in ordered_files:
+        reader = PdfReader(file.stream)
+        for page in reader.pages:
+            merger.add_page(page)
+
+    output_path = os.path.join(UPLOAD_FOLDER, f"merged_{uuid4().hex}.pdf")
+    with open(output_path, 'wb') as f:
+        merger.write(f)
+
+    return send_file(output_path, as_attachment=True)
 
 @app.route("/pdf/split", methods=["POST"])
 def pdf_split():
