@@ -119,8 +119,7 @@ def reorder_pdf():
     return render_template('reorder.html', images=None)
 @app.route('/pdf/reorder/submit', methods=['POST'])
 def submit_reorder():
-    order_str = request.form.get('order', '')
-    order = order_str.split(',') if order_str else []
+    order = request.form.getlist('order[]')  # DÜZELTİLDİ
     original_pdf_path = request.form['pdf_path']
 
     reader = PdfReader(original_pdf_path)
@@ -144,6 +143,5 @@ def submit_reorder():
     # ----------------------------------
 
     return send_file(output_path, as_attachment=True)
-
 if __name__ == "__main__":
     app.run(debug=True)
