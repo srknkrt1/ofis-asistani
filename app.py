@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for
 import os, tempfile
 import fitz  # PyMuPDF
-import uuid
+from werkzeug.utils import secure_filename
+from uuid import uuid4
+from PyPDF2 import PdfReader, PdfWriter
 from pdf_tools import (
     birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf,
     pdf_to_word
@@ -9,7 +11,9 @@ from pdf_tools import (
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
+IMAGE_FOLDER = 'static/temp_images'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(IMAGE_FOLDER, exist_ok=True)
 
 @app.route("/")
 def index():
@@ -87,55 +91,50 @@ def pdf2word():
     pdf_to_word(input_path, output_path)
     return send_file(output_path, as_attachment=True)
 
-@app.route('/')
-def index():
-    return redirect(url_for('reorder_pdf'))
-
-@app.route('/reorder', methods=['GET', 'POST'])
+@app.route('/pdf/reorder', methods=['GET', 'POST'])
 def reorder_pdf():
     if request.method == 'POST':
-        file = request.files['pdf']
-        if file.filename.endswith('.pdf'):
-            uid = str(uuid.uuid4())
-            filepath = os.path.join(UPLOAD_FOLDER, uid + '.pdf')
-            file.save(filepath)
+        pdf_file = request.files['pdf']
+        if not pdf_file:
+            return "Dosya yüklenmedi", 400
 
-            # Sayfa sayısını kontrol et
-            doc = fitz.open(filepath)
-            total_pages = len(doc)
-            doc.close()
+        filename = secure_filename(pdf_file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        pdf_file.save(filepath)
 
-            return render_template('reorder.html', file=uid + '.pdf', total=total_pages)
+        doc = fitz.open(filepath)
+        image_filenames = []
 
-    return '''
-        <h2>PDF Sayfa Sıralayıcı</h2>
-        <form method="post" enctype="multipart/form-data">
-            <input type="file" name="pdf" accept=".pdf" required>
-            <button type="submit">Yükle</button>
-        </form>
-    '''
+        for i in range(len(doc)):
+            page = doc.load_page(i)
+            pix = page.get_pixmap(dpi=100)
+            img_name = f"{uuid4().hex}.png"
+            img_path = os.path.join(IMAGE_FOLDER, img_name)
+            pix.save(img_path)
+            image_filenames.append((img_name, i))  # (filename, page_index)
 
-@app.route('/save_order', methods=['POST'])
-def save_order():
-    data = request.json
-    filename = data['filename']
-    new_order = data['order']  # ["0", "2", "1", ...]
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
+        doc.close()
+        return render_template('reorder.html', images=image_filenames, pdf_path=filepath)
 
-    doc = fitz.open(filepath)
-    new_doc = fitz.open()
+    return render_template('reorder.html', images=None)
 
-    for i in new_order:
-        new_doc.insert_pdf(doc, from_page=int(i), to_page=int(i))
+@app.route('/pdf/reorder/submit', methods=['POST'])
+def submit_reorder():
+    order = request.form.getlist('order[]')
+    original_pdf_path = request.form['pdf_path']
 
-    output_path = os.path.join(UPLOAD_FOLDER, 'reordered_' + filename)
-    new_doc.save(output_path)
+    reader = PdfReader(original_pdf_path)
+    writer = PdfWriter()
 
-    return {'download_url': '/download/' + 'reordered_' + filename}
+    for index in order:
+        page_index = int(index)
+        writer.add_page(reader.pages[page_index])
 
-@app.route('/download/<filename>')
-def download(filename):
-    return send_file(os.path.join(UPLOAD_FOLDER, filename), as_attachment=True)
+    output_path = os.path.join(UPLOAD_FOLDER, f"reordered_{uuid4().hex}.pdf")
+    with open(output_path, 'wb') as f:
+        writer.write(f)
+
+    return send_file(output_path, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
