@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Sayfa Sırala</title>
+  <script src="/static/sortable.min.js"></script>
+  <style>
+    #thumbnails { display: flex; gap: 10px; flex-wrap: wrap; }
+    .page { border: 1px solid #ccc; padding: 5px; cursor: move; }
+    .page img { width: 100px; }
+    button { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h2>Sayfaları Sürükle ve Sırala</h2>
+  <div id="thumbnails"></div>
+
+  <button onclick="saveOrder()">Sıralamayı Kaydet</button>
+  <div id="downloadLink"></div>
+
+  <script>
+    const filename = "{{ file }}";
+    const total = {{ total }};
+    const container = document.getElementById('thumbnails');
+
+    for (let i = 0; i < total; i++) {
+      const div = document.createElement('div');
+      div.className = 'page';
+      div.setAttribute('data-id', i);
+      div.innerHTML = `<img src="https://via.placeholder.com/100x140?text=Sayfa+${i+1}"><br>Sayfa ${i+1}`;
+      container.appendChild(div);
+    }
+
+    new Sortable(container, { animation: 150 });
+
+    function saveOrder() {
+      const order = [...container.children].map(el => el.getAttribute('data-id'));
+      fetch('/save_order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, order })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('downloadLink').innerHTML = `
+          <a href="${data.download_url}" target="_blank">Yeni PDF'yi İndir</a>
+        `;
+      });
+    }
+  </script>
+
+</body>
+</html>
