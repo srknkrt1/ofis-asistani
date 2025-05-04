@@ -53,9 +53,32 @@
       font-size: 14px;
     }
 
+    .footer-links {
+      margin-top: 30px;
+      background: #e1e5ea;
+      padding: 20px;
+    }
+
+    .footer-links a {
+      margin: 0 10px;
+      color: #2c3e50;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
     @media (max-width: 600px) {
       .button {
         width: 80%;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
     }
   </style>
@@ -71,7 +94,14 @@
   </div>
 
   <footer>
-    Bu uygulama şu anda <strong>deneme</strong> sürecindedir. VPS sunucuya taşındığında <strong>video indirme</strong> ve <strong>transkript</strong> özellikleri aktif olacaktır.
+    Bu uygulama şu anda <strong>deneme</strong> sürecindedir.
+    <div class="footer-links">
+      <a href="/hakkimizda.html">Hakkımızda</a>
+      <a href="/iletisim.html">İletişim</a>
+      <a href="/gizlilik-politikasi.html">Gizlilik Politikası</a>
+      <a href="/kullanim-kosullari.html">Kullanım Koşulları</a>
+      <a href="/dmca.html">DMCA</a>
+    </div>
   </footer>
 
 </body>
