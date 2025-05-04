@@ -64,3 +64,34 @@ def indir_video(url, secenek="video"):
     except Exception as e:
         print(f"Hata oluştu: {e}")
         return None
+        
+def indir_instagram(url):
+    return indir_video_genel(url, "instagram")
+
+def indir_twitter(url):
+    return indir_video_genel(url, "twitter")
+
+def indir_video_genel(url, kaynak):
+    temp_dir = "downloads"
+    os.makedirs(temp_dir, exist_ok=True)
+
+    ydl_opts = {
+        'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
+        'format': 'best',
+    }
+
+    try:
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            title = info.get("title", "video")
+            ext = info.get("ext", "mp4")
+
+            temiz_ad = temizle_dosya_adi(title)
+            indirilen_dosya = os.path.join(temp_dir, f"{temiz_ad}.{ext}")
+            if os.path.exists(indirilen_dosya):
+                return indirilen_dosya
+            return None
+    except Exception as e:
+        print(f"[{kaynak.upper()}] Hata oluştu: {e}")
+        return None
+
