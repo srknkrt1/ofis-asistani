@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for,after_this_request
 import os, tempfile
-from video_tools import indir_video
+from video_tools import indir_video, indir_instagram, indir_twitter
 import fitz  # PyMuPDF
 from werkzeug.utils import secure_filename
 from uuid import uuid4
@@ -154,6 +154,7 @@ def reorder_pdf():
         return render_template('reorder.html', images=image_filenames, pdf_path=filepath)
 
     return render_template('reorder.html', images=None)
+    
 @app.route('/pdf/reorder/submit', methods=['POST'])
 def submit_reorder():
     order = request.form.getlist('order[]')
