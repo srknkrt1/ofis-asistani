@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for, after_this_request
 import os, tempfile
+import subprocess
 from video_tools import indir_video, indir_instagram, indir_twitter
 import fitz  # PyMuPDF
 from werkzeug.utils import secure_filename
@@ -30,9 +31,39 @@ def pdf():
 def video():
     return render_template("video.html")
 
-@app.route("/transkript")
+def get_audio_duration(file_path):
+    result = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries",
+         "format=duration", "-of",
+         "default=noprint_wrappers=1:nokey=1", file_path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+    return float(result.stdout)
+
+@app.route('/transkript', methods=['POST'])
 def transkript():
-    return render_template("transkript.html")
+    dosya = request.files['file']
+    if dosya:
+        dosya_yolu = os.path.join('uploads', dosya.filename)
+        dosya.save(dosya_yolu)
+
+        # 10 dakika kontrolü
+        sure = get_audio_duration(dosya_yolu)
+        if sure > 600:
+            os.remove(dosya_yolu)
+            return render_template("transkript.html", hata="Dosya 10 dakikadan uzun, lütfen daha kısa yükleyin.")
+
+        try:
+            metin = transkripte_cevir(dosya_yolu)
+            dosya_adi = os.path.splitext(dosya.filename)[0] + ".docx"
+            dosya_yolu = os.path.join("çıktılar", dosya_adi)
+            doc = Document()
+            doc.add_paragraph(metin)
+            doc.save(dosya_yolu)
+            return send_file(dosya_yolu, as_attachment=True)
+        except Exception as e:
+            return render_template("transkript.html", hata="İşlem sırasında hata oluştu: " + str(e))
 
 @app.route('/pdf/merge', methods=['POST'])
 def merge_pdfs():
