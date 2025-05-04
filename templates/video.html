@@ -40,32 +40,18 @@
     <!-- Sekmeler -->
     <ul class="nav nav-tabs justify-content-center" id="videoTab" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube" type="button" role="tab">▶️ YouTube</button>
-      </li>
-      <li class="nav-item" role="presentation">
         <button class="nav-link" id="instagram-tab" data-bs-toggle="tab" data-bs-target="#instagram" type="button" role="tab">📸 Instagram</button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="twitter-tab" data-bs-toggle="tab" data-bs-target="#twitter" type="button" role="tab">X (Twitter)</button>
       </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube" type="button" role="tab">▶️ YouTube</button>
+      </li>
     </ul>
 
     <!-- Sekme İçerikleri -->
     <div class="tab-content" id="videoTabContent">
-
-      <!-- YouTube -->
-      <div class="tab-pane fade show active" id="youtube" role="tabpanel">
-        <h4>▶️ YouTube Video/Ses/Oynatma Listesi İndir</h4>
-        <form method="post" action="/youtube/download">
-          <input class="form-control" type="text" name="url" placeholder="YouTube video URL'si" required>
-          <select class="form-select" name="secenek">
-            <option value="video">Video (.mp4)</option>
-            <option value="audio">Ses (.mp3)</option>
-            <option value="playlist">Oynatma Listesi</option>
-          </select>
-          <button class="btn btn-primary" type="submit">İndir</button>
-        </form>
-      </div>
 
       <!-- Instagram -->
       <div class="tab-pane fade" id="instagram" role="tabpanel">
@@ -85,6 +71,20 @@
         </form>
       </div>
     </div>
+
+     <!-- YouTube -->
+      <div class="tab-pane fade show active" id="youtube" role="tabpanel">
+        <h4>▶️ YouTube Video/Ses/Oynatma Listesi İndir</h4>
+        <form method="post" action="/youtube/download">
+          <input class="form-control" type="text" name="url" placeholder="YouTube video URL'si" required>
+          <select class="form-select" name="secenek">
+            <option value="video">Video (.mp4)</option>
+            <option value="audio">Ses (.mp3)</option>
+            <option value="playlist">Oynatma Listesi</option>
+          </select>
+          <button class="btn btn-primary" type="submit">İndir</button>
+        </form>
+      </div>
 
     <div class="text-center info mt-4">
       Bu özellik deneme sürecindedir. <br>
