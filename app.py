@@ -3,6 +3,7 @@ import os, tempfile
 import subprocess
 from video_tools import indir_video, indir_instagram, indir_twitter
 import fitz  # PyMuPDF
+import threading
 from werkzeug.utils import secure_filename
 from uuid import uuid4
 from PyPDF2 import PdfReader, PdfWriter
@@ -31,6 +32,8 @@ def pdf():
 def video():
     return render_template("video.html")
 
+transkript_kilit = threading.Lock()
+
 def get_audio_duration(file_path):
     result = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries",
@@ -43,6 +46,9 @@ def get_audio_duration(file_path):
 
 @app.route('/transkript', methods=['POST'])
 def transkript():
+    if not transkript_kilit.acquire(blocking=False):
+        return render_template("transkript.html", hata="⚠️ Şu anda başka bir transkript işlemi yapılıyor. Lütfen birkaç dakika sonra tekrar deneyiniz.")
+    try:
     dosya = request.files['file']
     if dosya:
         dosya_yolu = os.path.join('uploads', dosya.filename)
@@ -64,7 +70,9 @@ def transkript():
             return send_file(dosya_yolu, as_attachment=True)
         except Exception as e:
             return render_template("transkript.html", hata="İşlem sırasında hata oluştu: " + str(e))
-
+        finally:
+        transkript_kilit.release()
+        
 @app.route('/pdf/merge', methods=['POST'])
 def merge_pdfs():
     uploaded_files = request.files.getlist('pdfs')
