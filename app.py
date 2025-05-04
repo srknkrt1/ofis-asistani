@@ -6,7 +6,6 @@ from transkript import transkripte_cevir
 from video_tools import indir_video, indir_instagram, indir_twitter
 import fitz  # PyMuPDF
 import threading
-
 from werkzeug.utils import secure_filename
 from uuid import uuid4
 from PyPDF2 import PdfReader, PdfWriter
