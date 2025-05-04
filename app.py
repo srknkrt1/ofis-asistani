@@ -34,6 +34,26 @@ def pdf():
 def video():
     return render_template("video.html")
 
+@app.route('/hakkimizda')
+def hakkimizda():
+    return render_template('hakkimizda.html')
+
+@app.route('/iletisim', methods=['GET', 'POST'])
+def iletisim():
+    return render_template('iletisim.html')
+
+@app.route('/gizlilik-politikasi')
+def gizlilik_politikasi():
+    return render_template('gizlilik-politikasi.html')
+
+@app.route('/kullanim-kosullari')
+def kullanim_kosullari():
+    return render_template('kullanim-kosullari.html')
+
+@app.route('/dmca')
+def dmca():
+    return render_template('dmca.html')
+
 transkript_kilit = threading.Lock()
 
 def get_audio_duration(file_path):
