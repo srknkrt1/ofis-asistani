@@ -81,12 +81,28 @@
     <button type="submit">Transkripti Oluştur</button>
   </form>
 
+  <div id="loading" style="display:none;" class="mt-3 alert alert-info">
+    ⏳ Transkript oluşturuluyor, lütfen bekleyiniz...
+  </div>
+
+{% if hata %}
+  <div class="mt-3 alert alert-danger">
+    {{ hata }}
+  </div>
+{% endif %}
+
   <div class="info">
-    Bu özellik deneme sürecinde pasif durumdadır.<br>
-    Sunucu VPS'e taşındığında aktif olacaktır.
+    Bu özellik deneme sürecindedir.<br>
+    Uygulama yalnızca 10 dakikadan kısa ses dosyalarını transkript etmektedir.
   </div>
 
   <a href="/" class="back-btn">← Ana Sayfa</a>
-
+  
+<script>
+document.getElementById("transkript-form").addEventListener("submit", function() {
+  document.getElementById("loading").style.display = "block";
+});
+</script>
+  
 </body>
 </html>
