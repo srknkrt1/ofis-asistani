@@ -209,17 +209,50 @@ def youtube_download():
     else:
         return "İndirme sırasında bir hata oluştu.", 500
 
-@app.route("/instagram/download", methods=["POST"])
-def instagram_download():
-    url = request.form["url"]
-    indir_instagram(url)
-    return "Instagram indirme tamamlandı."
+from flask import send_file, after_this_request
 
-@app.route("/twitter/download", methods=["POST"])
+@app.route("/video/instagram", methods=["POST"])
+def instagram_download():
+    url = request.form.get("url")
+    if not url:
+        return "URL belirtilmedi."
+
+    dosya_yolu = indir_instagram(url)
+    if dosya_yolu and os.path.exists(dosya_yolu):
+
+        @after_this_request
+        def temizle(response):
+            try:
+                os.remove(dosya_yolu)
+            except Exception as e:
+                print(f"Dosya silinemedi: {e}")
+            return response
+
+        return send_file(dosya_yolu, as_attachment=True)
+    else:
+        return "İndirme başarısız oldu."
+
+
+@app.route("/video/twitter", methods=["POST"])
 def twitter_download():
-    url = request.form["url"]
-    indir_twitter(url)
-    return "Twitter indirme tamamlandı."
+    url = request.form.get("url")
+    if not url:
+        return "URL belirtilmedi."
+
+    dosya_yolu = indir_twitter(url)
+    if dosya_yolu and os.path.exists(dosya_yolu):
+
+        @after_this_request
+        def temizle(response):
+            try:
+                os.remove(dosya_yolu)
+            except Exception as e:
+                print(f"Dosya silinemedi: {e}")
+            return response
+
+        return send_file(dosya_yolu, as_attachment=True)
+    else:
+        return "İndirme başarısız oldu."
 
 if __name__ == "__main__":
     app.run(debug=True)
