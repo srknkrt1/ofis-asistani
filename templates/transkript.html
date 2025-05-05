@@ -2,107 +2,99 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Transkript</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transkript - Ofis Asistanı</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
       background: #f4f7fa;
-      margin: 0;
-      padding: 0;
-      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
-
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 25px 0;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    form {
-      margin-top: 80px;
-      display: inline-block;
+    .form-container {
       background: white;
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      margin-top: 50px;
     }
-
-    input[type="file"] {
-      padding: 10px;
-      margin: 10px 0;
-    }
-
-    button {
+    .btn-custom {
       padding: 10px 20px;
       background-color: #3498db;
       color: white;
       border: none;
       border-radius: 8px;
       font-size: 16px;
-      cursor: pointer;
     }
-
-    button:hover {
+    .btn-custom:hover {
       background-color: #2980b9;
     }
-
-    .info {
-      margin-top: 30px;
-      font-size: 16px;
-      color: #555;
-    }
-
-    .back-btn {
-      display: inline-block;
-      margin-top: 15px;
-      background: #bdc3c7;
-      color: black;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      text-decoration: none;
+    .footer-links {
+      background-color: #e0e0e0;
+      padding: 15px 0;
+      text-align: center;
       font-size: 14px;
+      margin-top: auto;
     }
-
-    .back-btn:hover {
-      background: #95a5a6;
+    .footer-links a {
+      margin: 0 15px;
+      color: #333;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-<header>📝 Transkript</header>
-
-<form id="transkript-form" method="post" action="/transkript" enctype="multipart/form-data">
-  <input type="file" name="audio" accept=".mp3,.wav,.m4a" required><br>
-  <button type="submit">Transkripti Oluştur</button>
-</form>
-
-<div id="loading" style="display:none; margin-top:20px; color:#2980b9;">
-  ⏳ Transkript oluşturuluyor, lütfen bekleyiniz...
-</div>
-
-{% if hata %}
-  <div style="margin-top: 20px; color: red;">
-    {{ hata }}
+<nav class="navbar navbar-expand-lg" style="background-color: #2c3e50;">
+  <div class="container-fluid justify-content-center">
+    <span class="navbar-brand mb-0 h1 text-white">📝 Transkript</span>
   </div>
-{% endif %}
+</nav>
 
-<div class="info">
-  Bu özellik deneme sürecindedir.<br>
-  Uygulama yalnızca 10 dakikadan kısa ses dosyalarını transkript etmektedir.
+<div class="container d-flex justify-content-center">
+  <form id="transkript-form" method="post" action="/transkript" enctype="multipart/form-data" class="form-container col-md-6">
+    <div class="mb-3">
+      <input type="file" name="audio" accept=".mp3,.wav,.m4a" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-custom w-100">Transkripti Oluştur</button>
+
+    <div id="loading" style="display:none; margin-top:20px; color:#2980b9;" class="text-center">
+      ⏳ Transkript oluşturuluyor, lütfen bekleyiniz...
+    </div>
+
+    {% if hata %}
+      <div style="margin-top: 20px; color: red;" class="text-center">
+        {{ hata }}
+      </div>
+    {% endif %}
+
+    <div class="text-center mt-4 text-muted">
+      Bu özellik deneme sürecindedir.<br>
+      Uygulama yalnızca 10 dakikadan kısa ses dosyalarını transkript etmektedir.
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-outline-secondary">← Ana Sayfa</a>
+    </div>
+  </form>
 </div>
 
-<a href="/" class="back-btn">← Ana Sayfa</a>
+<div class="footer-links mt-5">
+  <a href="/hakkimizda">Hakkımızda</a>
+  <a href="/iletisim">İletişim</a>
+  <a href="/gizlilik">Gizlilik Politikası</a>
+  <a href="/kullanim">Kullanım Koşulları</a>
+  <a href="/dmca">DMCA</a>
+</div>
 
 <script>
-document.getElementById("transkript-form").addEventListener("submit", function() {
-  document.getElementById("loading").style.display = "block";
-});
+  document.getElementById("transkript-form").addEventListener("submit", function () {
+    document.getElementById("loading").style.display = "block";
+  });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
