@@ -5,12 +5,24 @@
   <title>Ofis Asistanı</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
       font-family: "Segoe UI", sans-serif;
       background: #f4f7fa;
-      margin: 0;
-      padding: 0;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     header {
@@ -20,11 +32,13 @@
       font-size: 32px;
       font-weight: bold;
       letter-spacing: 1px;
+      text-align: center;
+      width: 100%;
     }
 
     .container {
       max-width: 800px;
-      margin: 50px auto;
+      margin: 40px auto 20px auto;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
@@ -46,24 +60,33 @@
       background-color: #2980b9;
     }
 
+    .description {
+      text-align: center;
+      margin: 30px auto;
+      max-width: 700px;
+      line-height: 1.6;
+      color: #444;
+    }
+
     footer {
-      margin-top: 80px;
+      background-color: transparent;
       padding: 20px;
+      text-align: center;
       color: #666;
       font-size: 14px;
     }
 
     .footer-links {
-      margin-top: 30px;
-      background: #e1e5ea;
-      padding: 20px;
+      background-color: #e0e0e0;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 14px;
     }
 
     .footer-links a {
-      margin: 0 10px;
-      color: #2c3e50;
+      margin: 0 15px;
+      color: #333;
       text-decoration: none;
-      font-size: 14px;
     }
 
     .footer-links a:hover {
@@ -75,10 +98,9 @@
         width: 80%;
       }
 
-      .footer-links {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+      .footer-links a {
+        display: block;
+        margin: 10px 0;
       }
     }
   </style>
@@ -87,22 +109,31 @@
 
   <header>Ofis Asistanı</header>
 
-  <div class="container">
-    <a href="/pdf" class="button">📄 PDF İşlemleri</a>
-    <a href="/video" class="button">🎬 Video İndirme</a>
-    <a href="/transkript" class="button">📝 Transkript</a>
-  </div>
+  <main>
+    <div class="container">
+      <a href="/pdf" class="button">📄 PDF İşlemleri</a>
+      <a href="/video" class="button">🎬 Video İndirme</a>
+      <a href="/transkript" class="button">📝 Transkript</a>
+    </div>
+
+    <div class="description">
+      <p><strong>PDF dosyalarınızla ilgili düzenleme, birleştirme, dönüştürme gibi işlemleri hızlı ve kolayca gerçekleştirin.</strong></p>
+      <p><strong>Instagram ve Twitter gibi sosyal platformlardan videoları zahmetsizce tek tıkla indirin.</strong></p>
+      <p><strong>Ses kayıtlarınızı saniyeler içinde metne dönüştürün, hepsi ücretsiz ve çevrimiçi.</strong></p>
+    </div>
+  </main>
 
   <footer>
-    Bu uygulama şu anda <strong>deneme</strong> sürecindedir.
-    <div class="footer-links">
-      <a href="/hakkimizda.html">Hakkımızda</a>
-      <a href="/iletisim.html">İletişim</a>
-      <a href="/gizlilik-politikasi.html">Gizlilik Politikası</a>
-      <a href="/kullanim-kosullari.html">Kullanım Koşulları</a>
-      <a href="/dmca.html">DMCA</a>
-    </div>
+    Bu uygulama şu anda <strong>geliştirme</strong> sürecindedir.
   </footer>
+
+  <div class="footer-links">
+    <a href="/hakkimizda">Hakkımızda</a>
+    <a href="/iletisim">İletişim</a>
+    <a href="/gizlilik">Gizlilik Politikası</a>
+    <a href="/kullanim">Kullanım Koşulları</a>
+    <a href="/dmca">DMCA</a>
+  </div>
 
 </body>
 </html>
