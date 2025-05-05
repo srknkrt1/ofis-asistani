@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Ofis Asistanı</title>
+  <title>DijitalHamal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
@@ -34,6 +34,17 @@
       letter-spacing: 1px;
       text-align: center;
       width: 100%;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .logo {
+      height: 40px; /* Logo boyutu: yazıdan biraz büyük */
     }
 
     .container {
@@ -107,7 +118,12 @@
 </head>
 <body>
 
-  <header>Ofis Asistanı</header>
+  <header>
+    <div class="header-content">
+      <img src="/static/images/logo.png" alt="Logo" class="logo">
+      <span>DijitalHamal</span>
+    </div>
+  </header>
 
   <main>
     <div class="container">
@@ -117,14 +133,14 @@
     </div>
 
     <div class="description">
-      <p><strong>PDF dosyalarınızla ilgili düzenleme, birleştirme, dönüştürme gibi işlemleri hızlı ve kolayca gerçekleştirin.</strong></p>
-      <p><strong>Instagram ve Twitter gibi sosyal platformlardan videoları zahmetsizce tek tıkla indirin.</strong></p>
-      <p><strong>Ses kayıtlarınızı saniyeler içinde metne dönüştürün, hepsi ücretsiz ve çevrimiçi.</strong></p>
+      <p><strong>DijitalHamal ile PDF dosyalarınızla ilgili düzenleme, birleştirme, dönüştürme gibi işlemleri hızlı ve kolayca gerçekleştirebilirsiniz.</strong></p>
+      <p><strong>Instagram ve Twitter gibi sosyal platformlardaki videoları zahmetsizce tek tıkla indirebilirsiniz.</strong></p>
+      <p><strong>Ses kayıtlarınızı saniyeler içinde metne dönüştürebilirsiniz.Üstelik hepsi ücretsiz ve çevrimiçi!</strong></p>
     </div>
   </main>
 
   <footer>
-    Bu uygulama şu anda <strong>geliştirme</strong> sürecindedir.
+    Bu uygulama <strong>geliştirme</strong> aşamasındadır.
   </footer>
 
   <div class="footer-links">
