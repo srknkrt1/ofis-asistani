@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>İletişim - DijitalHamal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 30px 0;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .content {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    form {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-family: inherit;
+    }
+
+    button {
+      padding: 12px 25px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-top: 20px;
+    }
+
+    .button-group {
+      text-align: center;
+      margin: 40px 0 20px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 15px 30px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      border-radius: 12px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #2980b9;
+    }
+
+    .footer-links {
+      background-color: #e0e0e0;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 14px;
+      margin-top: auto;
+    }
+
+    .footer-links a {
+      margin: 0 15px;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>İletişim</header>
+
+  <div class="content">
+    <form method="POST" action="/iletisim-gonder">
+      <label>Adınız:</label>
+      <input type="text" name="isim" required>
+
+      <label>E-posta:</label>
+      <input type="email" name="email" required>
+
+      <label>Mesajınız:</label>
+      <textarea name="mesaj" rows="6" required></textarea>
+
+      <button type="submit">Gönder</button>
+    </form>
+    <p class="note">Form aracılığıyla gönderilen mesajlar, doğrudan sistem yöneticisine iletilir.</p>
+
+    <div class="button-group">
+      <a href="/" class="button">Ana Sayfa</a>
+    </div>
+  </div>
+
+  <div class="footer-links">
+    <a href="/hakkimizda">Hakkımızda</a>
+    <a href="/iletisim">İletişim</a>
+    <a href="/gizlilik">Gizlilik Politikası</a>
+    <a href="/kullanim">Kullanım Koşulları</a>
+    <a href="/dmca">DMCA</a>
+  </div>
+
+</body>
+</html>
+

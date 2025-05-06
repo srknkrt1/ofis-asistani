@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>DijitalHamal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f7fa;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 5px;;
+      text-align: center;
+      width: 100%;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .logo {
+      height: 220px; /* Logo boyutu: yazıdan biraz büyük */
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto 20px auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 20px 40px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+      border-radius: 15px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #2980b9;
+    }
+
+    .description {
+      text-align: center;
+      margin: 30px auto;
+      max-width: 700px;
+      line-height: 1.6;
+      color: #444;
+    }
+
+    footer {
+      background-color: transparent;
+      padding: 20px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .footer-links {
+      background-color: #e0e0e0;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .footer-links a {
+      margin: 0 15px;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .button {
+        width: 80%;
+      }
+
+      .footer-links a {
+        display: block;
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <img src="/static/images/logo.png" alt="Logo" class="logo">
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <a href="/pdf" class="button">📄 PDF İşlemleri</a>
+      <a href="/video" class="button">🎬 Video İndirme</a>
+      <a href="/transkript" class="button">📝 Transkript</a>
+    </div>
+
+    <div class="description">
+      <p><strong>DijitalHamal ile PDF dosyalarınızla ilgili düzenleme, birleştirme, dönüştürme gibi işlemleri hızlı ve kolayca gerçekleştirebilirsiniz.</strong></p>
+      <p><strong>Instagram ve Twitter gibi sosyal platformlardaki videoları zahmetsizce tek tıkla indirebilirsiniz.</strong></p>
+      <p><strong>Ses kayıtlarınızı saniyeler içinde metne dönüştürebilirsiniz.Üstelik hepsi ücretsiz ve çevrimiçi!</strong></p>
+    </div>
+  </main>
+
+  <footer>
+    Bu uygulama <strong>geliştirme</strong> aşamasındadır.
+  </footer>
+
+  <div class="footer-links">
+    <a href="/hakkimizda">Hakkımızda</a>
+    <a href="/iletisim">İletişim</a>
+    <a href="/gizlilik">Gizlilik Politikası</a>
+    <a href="/kullanim">Kullanım Koşulları</a>
+    <a href="/dmca">DMCA</a>
+  </div>
+
+</body>
+</html>
