@@ -75,9 +75,38 @@
       Uygulama yalnızca 10 dakikadan kısa ses dosyalarını transkript etmektedir.
     </div>
 
+    <!-- 🔽 10'ar Dakikaya Bölme Aracı Buraya Eklendi -->
+    <hr class="my-4">
+    <h5 class="text-center text-secondary">🔧 Alternatif: Dosyanız 10 dakikadan uzun mu?</h5>
+    <p class="text-center text-muted mb-4">Dosyanızı 10 dakikalık parçalara bölerek ayrı ayrı transkript işlemi gerçekleştirebilirsiniz.</p>
+
+    <form method="POST" action="/split-audio" enctype="multipart/form-data">
+      <div class="mb-3">
+        <input type="file" name="audio_file" accept=".mp3,.wav,.m4a" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-outline-primary w-100">📂 10 Dakikalık Parçalara Böl</button>
+    </form>
+
+    {% if audio_parts %}
+      <div class="mt-4">
+        <h6 class="text-center">🔗 İndirilebilir Parçalar</h6>
+        <ul class="list-group">
+          {% for part in audio_parts %}
+            <li class="list-group-item text-center">
+              <a href="/download/{{ part.filename }}" target="_blank">
+                🎧 Part {{ loop.index }} ({{ part.start_min }} - {{ part.end_min }} dk)
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Geri Dön -->
     <div class="text-center mt-4">
       <a href="/" class="btn btn-outline-secondary">← Ana Sayfa</a>
     </div>
+
   </form>
 </div>
 
