@@ -2,7 +2,6 @@ from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from pdf2docx import Converter
 from pdf2image import convert_from_path
 from docx import Document
-import pytesseract
 import subprocess
 
 def birlestir_pdf_listesi(pdf_paths, output_path):
