@@ -21,7 +21,6 @@ IMAGE_FOLDER = 'static/temp_images'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 
-AudioSegment.converter = "/usr/bin/ffmpeg"
 
 @app.route("/")
 def index():
@@ -55,54 +54,6 @@ def kullanim():
 def dmca():
     return render_template('dmca.html')
 
-transkript_kilit = threading.Lock()
-
-def get_audio_duration(file_path):
-    result = subprocess.run(
-        ["/usr/bin/ffprobe", "-v", "error", "-show_entries",
-         "format=duration", "-of",
-         "default=noprint_wrappers=1:nokey=1", file_path]
-        ,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT
-    )
-    return float(result.stdout)
-
-@app.route('/transkript', methods=['GET', 'POST'])
-def transkript():
-    if request.method == 'GET':
-        return render_template("transkript.html")
-
-    if not transkript_kilit.acquire(blocking=False):
-        return render_template("transkript.html", hata="⚠️ Şu anda başka bir transkript işlemi yapılıyor. Lütfen birkaç dakika sonra tekrar deneyiniz.")
-    
-    try:
-        dosya = request.files['audio']  # input name="audio" olmalı
-        if dosya:
-            dosya_yolu = os.path.join('uploads', dosya.filename)
-            dosya.save(dosya_yolu)
-
-            # 10 dakika kontrolü
-            sure = get_audio_duration(dosya_yolu)
-            if sure > 600:
-                os.remove(dosya_yolu)
-                return render_template("transkript.html", hata="Dosya 10 dakikadan uzun, lütfen daha kısa yükleyin.")
-
-            try:
-                metin = transkripte_cevir(dosya_yolu)
-                dosya_adi = os.path.splitext(dosya.filename)[0] + ".docx"
-                dosya_yolu = os.path.join("çıktılar", dosya_adi)
-                doc = Document()
-                doc.add_paragraph(metin)
-                doc.save(dosya_yolu)
-                return send_file(dosya_yolu, as_attachment=True)
-            except Exception as e:
-                return render_template("transkript.html", hata="İşlem sırasında hata oluştu: " + str(e))
-            finally:
-                transkript_kilit.release()
-    except Exception as e:
-        transkript_kilit.release()
-        return render_template("transkript.html", hata="Yükleme hatası: " + str(e))
 
 @app.route('/pdf/merge', methods=['POST'])
 def merge_pdfs():
@@ -259,93 +210,6 @@ def submit_reorder():
         print("Silme hatası:", e)
 
     return send_file(output_path, as_attachment=True)
-
-@app.route("/youtube/download", methods=["POST"])
-def youtube_download():
-    url = request.form["url"]
-    secenek = request.form.get("secenek", "video")
-    dosya_yolu = indir_video(url, secenek)
-
-    if dosya_yolu and os.path.exists(dosya_yolu):
-        @after_this_request
-        def temizle(response):
-            try:
-                os.remove(dosya_yolu)
-            except Exception as e:
-                print(f"Dosya silinemedi: {e}")
-            return response
-
-        return send_file(dosya_yolu, as_attachment=True)
-    else:
-        return "İndirme sırasında bir hata oluştu.", 500
-
-
-@app.route("/video/instagram", methods=["POST"])
-def instagram_download():
-    url = request.form.get("url")
-    if not url:
-        return "URL belirtilmedi."
-
-    dosya_yolu = indir_instagram(url)
-
-    if dosya_yolu and os.path.exists(dosya_yolu):
-
-        @after_this_request
-        def temizle(response):
-            try:
-                os.remove(dosya_yolu)
-            except Exception as e:
-                print(f"Dosya silinemedi: {e}")
-            return response
-
-        return send_file(
-            dosya_yolu,
-            as_attachment=True,
-            mimetype="video/mp4"
-        )
-
-    return "İndirme başarısız oldu."
-
-@app.route("/video/twitter", methods=["POST"])
-def twitter_download():
-    url = request.form.get("url")
-    if not url:
-        return "URL belirtilmedi."
-
-    dosya_yolu = indir_twitter(url)
-    if dosya_yolu and os.path.exists(dosya_yolu):
-
-        @after_this_request
-        def temizle(response):
-            try:
-                os.remove(dosya_yolu)
-            except Exception as e:
-                print(f"Dosya silinemedi: {e}")
-            return response
-
-        return send_file(
-            dosya_yolu,
-            as_attachment=True,
-            mimetype="video/mp4"
-        )
-
-    return "İndirme başarısız oldu."
-
-@app.route('/split-audio', methods=['POST'])
-def split_audio_route():
-    if 'audio_file' not in request.files:
-        return "No file part", 400
-
-    file = request.files['audio_file']
-    if file.filename == '':
-        return "No selected file", 400
-
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-    file.save(filepath)
-
-    parts = split_audio(filepath, chunk_length_minutes=10, output_dir="static/clips")
-
-    return render_template('transkript.html', audio_parts=parts)
 
 if __name__ == "__main__":
     app.run(debug=True)
