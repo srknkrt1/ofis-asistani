@@ -5,7 +5,6 @@ from docx import Document  # eksiktiyse eklenmeli
 from video_tools import indir_video, indir_instagram, indir_twitter,split_audio
 import fitz  # PyMuPDF
 import threading
-from pydub import AudioSegment
 from werkzeug.utils import secure_filename
 from uuid import uuid4
 from PyPDF2 import PdfReader, PdfWriter
