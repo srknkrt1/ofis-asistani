@@ -23,7 +23,9 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.08);
       margin-top: 20px;
-      position: relative;
+    }
+    .form-control, .form-select {
+      margin-bottom: 15px;
     }
     .footer-links {
       background-color: #e0e0e0;
@@ -99,7 +101,6 @@
 <div class="container mt-4">
   <h4 class="mb-3">🏁 Yarışan Grafik Verileri</h4>
 
-
   <div class="mb-3">
     <label for="excelUpload" class="form-label">Excel Dosyası Yükle</label>
     <input class="form-control" type="file" id="excelUpload" accept=".xlsx">
@@ -155,13 +156,11 @@
     </div>
   </div>
 
-
-    <div class="row-controls">
+  <div class="row-controls">
     <button class="btn btn-outline-secondary btn-sm btn-icon" onclick="addRow()">➕</button>
     <button class="btn btn-outline-secondary btn-sm btn-icon" onclick="removeRow()">➖</button>
   </div>
-  
-  <!-- Süre Ayarı -->
+
   <div class="mb-3 mt-3">
     <label for="durationRange" class="form-label">🎬 Video Süresi (5-20 saniye): <span id="durationLabel">10</span>s</label>
     <input type="range" class="form-range" min="5" max="20" step="1" value="10" id="durationRange">
@@ -184,73 +183,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  function addRow() {
-    const tbody = document.getElementById("tableBody");
-    const row = tbody.rows[0].cloneNode(true);
-    [...row.cells].forEach((cell, index) => {
-      if (index < row.cells.length - 1) cell.innerText = "";
-    });
-    tbody.appendChild(row);
-  }
-
-  function removeRow() {
-    const tbody = document.getElementById("tableBody");
-    if (tbody.rows.length > 1) tbody.deleteRow(tbody.rows.length - 1);
-  }
-
-  function addColumn() {
-    const headerRow = document.querySelector("#dataTable thead tr");
-    const newHeader = document.createElement("th");
-    newHeader.innerHTML = `
-      <div class="d-flex align-items-center justify-content-center">
-        <input type="color" class="color-picker" value="#888888">
-        <div class="editable" contenteditable="true">Yeni Kategori</div>
-      </div>
-    `;
-    headerRow.insertBefore(newHeader, headerRow.lastElementChild);
-
-    const tbodyRows = document.querySelectorAll("#tableBody tr");
-    tbodyRows.forEach(row => {
-      const cell = document.createElement("td");
-      cell.contentEditable = "true";
-      row.insertBefore(cell, row.lastElementChild);
-    });
-  }
-
-  function removeColumn() {
-    const headerRow = document.querySelector("#dataTable thead tr");
-    if (headerRow.children.length <= 2) return;
-    headerRow.removeChild(headerRow.children[headerRow.children.length - 2]);
-
-    const tbodyRows = document.querySelectorAll("#tableBody tr");
-    tbodyRows.forEach(row => {
-      row.removeChild(row.children[row.children.length - 2]);
-    });
-  }
-
-    document.getElementById('fileInput').addEventListener('change', function () {
-    const fileInput = this;
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-
-    fetch('/upload', {
-      method: 'POST',
-      body: formData,
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          alert("Yükleme hatası: " + data.error);
-        } else {
-          populateTable(data);
-        }
-      })
-      .catch(err => {
-        console.error("Yükleme sırasında hata:", err);
-        alert("Dosya yüklenemedi.");
-      });
-  });
-
   function populateTable(data) {
     const tableHead = document.getElementById("tableHead");
     const tableBody = document.getElementById("tableBody");
@@ -259,9 +191,7 @@
     tableHead.innerHTML = "";
     tableBody.innerHTML = "";
 
-    if (data.length === 0) {
-      return;
-    }
+    if (data.length === 0) return;
 
     // Başlık satırı oluştur
     const headerRow = document.createElement("tr");
@@ -296,63 +226,6 @@
   function removeRow(button) {
     const row = button.closest("tr");
     row.remove();
-  }  
-  
-  document.getElementById('durationRange').addEventListener('input', function() {
-    document.getElementById('durationLabel').innerText = this.value;
-  });
-
-  document.getElementById('createVideoButton').addEventListener('click', function() {
-    const data = getTableData();
-    const colors = getCategoryColors();
-    const duration = parseInt(document.getElementById("durationRange").value);
-
-    fetch('/generate_video', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: data, colors: colors, duration: duration })
-    })
-    .then(res => res.json())
-    .then(response => {
-      if (response.error) {
-        alert("Hata: " + response.error);
-      } else {
-        window.location.href = "/viz_result?video_path=" + encodeURIComponent(response.video_url);
-      }
-    })
-    .catch(error => {
-      console.error('Video oluşturulurken hata:', error);
-      alert("Hata oluştu.");
-    });
-  });
-
-  function getTableData() {
-    const table = document.getElementById("dataTable");
-    const rows = table.querySelectorAll("tbody tr");
-    const headers = Array.from(table.querySelectorAll("thead th")).map(th => {
-      const label = th.querySelector(".editable");
-      return label ? label.innerText.trim() : "";
-    });
-
-    const data = [headers];
-    rows.forEach(row => {
-      const cells = Array.from(row.querySelectorAll("td"));
-      data.push(cells.map(cell => cell.innerText.trim()));
-    });
-    return data;
-  }
-
-  function getCategoryColors() {
-    const headers = document.querySelectorAll("#dataTable thead th");
-    const colors = {};
-    headers.forEach(th => {
-      const labelEl = th.querySelector(".editable");
-      const colorEl = th.querySelector("input[type='color']");
-      if (labelEl && colorEl) {
-        colors[labelEl.innerText.trim()] = colorEl.value;
-      }
-    });
-    return colors;
   }
 </script>
 
