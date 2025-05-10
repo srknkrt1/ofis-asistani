@@ -1,88 +1,100 @@
-from flask import Flask, render_template, request
-import pandas as pd
-import bar_chart_race as bcr
-import uuid
 import os
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+import pandas as pd
+import matplotlib.pyplot as plt
+from moviepy.editor import VideoFileClip
+import matplotlib.animation as animation
+import numpy as np
 
 app = Flask(__name__)
-os.makedirs("static", exist_ok=True)
 
-@app.route("/", methods=["GET"])
+# Yükleme dosya yolu
+UPLOAD_FOLDER = 'uploads/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Dosya türlerini sınırlama
+ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/')
 def index():
-    return render_template("viz.html")
+    return render_template('viz.html')
 
-@app.route("/viz", methods=["POST"])
-def viz():
-    # Tablodan gelen başlıkları al
-    headers = []
-    colors = []
-    i = 0
-    while True:
-        header = request.form.get(f"header_{i}")
-        if not header:
-            break
-        headers.append(header)
-        color = request.form.get(f"color_{i}")
-        if color:
-            colors.append(color)
-        i += 1
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return redirect(request.url)
+    file = request.files['file']
+    if file and allowed_file(file.filename):
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(filename)
 
-    # Veri satırlarını oku
-    data = []
-    row_index = 0
-    while True:
-        row = []
-        empty_row = True
-        for col_index in range(len(headers)):
-            val = request.form.get(f"row_{row_index}_{col_index}")
-            if val:
-                empty_row = False
-            row.append(val.strip() if val else '')
-        if empty_row:
-            break
-        data.append(row)
-        row_index += 1
+        # Excel verisini oku ve işleme başla
+        df = pd.read_excel(filename)
 
-    if not data:
-        return "Veri girişi yapılmadı."
+        # Burada Excel verisini işleyecek kodları ekleyeceğiz
+        # Örneğin, basit bir CSV çıktısı dönebiliriz
+        data = df.to_dict(orient='records')
+        
+        # Yarışan grafik için veri görselleştirme işlemi yapılabilir
 
-    df = pd.DataFrame(data, columns=headers)
-    df.set_index(headers[0], inplace=True)
-    df = df.apply(pd.to_numeric, errors="coerce")
+        # Video oluşturma fonksiyonunu çağırabilirsiniz
 
-    filename = f"{uuid.uuid4()}.mp4"
-    filepath = os.path.join("static", filename)
+        return jsonify(data)
 
-    try:
-        bcr.bar_chart_race(
-            df=df,
-            filename=filepath,
-            orientation='h',
-            sort='desc',
-            n_bars=min(10, len(df.columns)),
-            fixed_order=False,
-            fixed_max=True,
-            steps_per_period=20,
-            period_length=1500,
-            interpolate_period=False,
-            bar_size=.95,
-            period_label={'x': .99, 'y': .25, 'ha': 'right', 'va': 'center'},
-            period_fmt='{x}',
-            cmap=colors if len(colors) == len(df.columns) else 'dark12'
-        )
-    except Exception as e:
-        return f"Hata oluştu: {e}"
+    return 'Geçersiz dosya formatı', 400
 
-    return f"""
-    <div style='text-align:center; margin-top:40px;'>
-        <h3>Grafiğiniz Oluşturuldu 🎉</h3>
-        <video width='720' height='480' controls autoplay>
-            <source src='/static/{filename}' type='video/mp4'>
-        </video>
-        <br><br>
-        <a href="/">🔙 Yeni Grafik Oluştur</a>
-    </div>
-    """
+# Grafik oluşturma fonksiyonu
+def create_racing_chart(data):
+    # Pandas DataFrame kullanarak grafik oluşturma
+    # Matplotlib kullanarak görselleştirme yapılacak
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-if __name__ == "__main__":
+    # Çizgi grafik oluşturma kodları
+    categories = data.columns[1:]  # Kategoriler 1. sütundan sonraki sütunlar
+    for category in categories:
+        ax.plot(data['Dönem'], data[category], label=category)
+
+    ax.set_title('Racing Chart')
+    ax.set_xlabel('Dönem')
+    ax.set_ylabel('Değer')
+    ax.legend()
+
+    # Görseli kaydet
+    chart_path = 'static/racing_chart.png'
+    plt.savefig(chart_path)
+    plt.close()
+
+    return chart_path
+
+@app.route('/generate_video', methods=['POST'])
+def generate_video():
+    # Excel verisini işleyin ve yarışan grafik oluşturun
+    # Verileri al, video oluşturmak için hazırlık yap
+    # create_racing_chart fonksiyonunu çağırın
+
+    data = request.json['data']  # JSON olarak gelen veriyi al
+    df = pd.DataFrame(data)
+
+    # Burada racing chart grafiği oluşturulacak
+    chart_path = create_racing_chart(df)
+
+    # Video oluşturma işlemi
+    video_path = create_video(chart_path)
+
+    return jsonify({"video_url": video_path})
+
+def create_video(chart_path):
+    # MoviePy kullanarak video oluşturma
+    video_path = 'static/racing_chart_video.mp4'
+
+    # Video oluşturma işlemleri (örneğin, sadece bir resim ile video oluşturulabilir)
+    clip = VideoFileClip(chart_path)
+    clip.write_videofile(video_path, codec="libx264")
+
+    return video_path
+
+if __name__ == '__main__':
     app.run(debug=True)
