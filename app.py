@@ -11,6 +11,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
+
+@app.route("/index")
+def index_page():
+    return render_template("index.html")
+
 @app.route("/viz")
 def viz_page():
     return render_template("viz.html")
