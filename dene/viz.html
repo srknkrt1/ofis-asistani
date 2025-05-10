@@ -283,14 +283,18 @@
   })
   .then(response => response.json())
   .then(videoData => {
-    alert('Video oluşturuldu: ' + videoData.video_url);
-    window.location.href = '/viz_result'; // Redirect to result page
+    if (videoData.error) {
+      alert('Hata: ' + videoData.error);
+    } else {
+      alert('Video oluşturuldu: ' + videoData.video_url);
+      window.location.href = '/viz_result?video_path=' + encodeURIComponent(videoData.video_url);
+    }
   })
   .catch(error => {
     console.error('Video oluşturulurken bir hata oluştu:', error);
+    alert('Bir hata oluştu. Lütfen tekrar deneyin.');
   });
 });
-
 
   function getTableData() {
     const rows = document.querySelectorAll('#dataTable tbody tr');
