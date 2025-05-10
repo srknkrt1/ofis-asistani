@@ -1,9 +1,7 @@
-import whisper
+
 from docx import Document
 import os
 import tempfile
-from pydub import AudioSegment
-AudioSegment.converter = "/usr/bin/ffmpeg"
 
 def transkripte_cevir(dosya_adi, dil="tr"):
     model = whisper.load_model("small")
