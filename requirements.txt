@@ -2,6 +2,7 @@ Flask
 gunicorn
 python-docx
 pandas 
-bar_chart_race 
 openpyxl
-uuid
+matplotlib 
+moviepy
+
