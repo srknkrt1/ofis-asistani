@@ -7,7 +7,7 @@ from docx import Document  # eksiktiyse eklenmeli
 import fitz  # PyMuPDF
 import threading
 from werkzeug.utils import secure_filename
-import uuid4
+import uuid
 from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
 from pdf_tools import (
