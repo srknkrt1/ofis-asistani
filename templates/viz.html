@@ -1,101 +1,106 @@
+<!-- viz.html -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <title>Veri Yarışı Oluştur</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    table input, select {
-      min-width: 120px;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f9f9f9;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+    button, input[type="submit"] {
+      background-color: #2ecc71;
+      color: white;
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #27ae60;
+    }
+    input[type="color"] {
+      border: none;
     }
   </style>
 </head>
 <body>
-<div class="container mt-4">
-  <h3 class="text-center">🏁 Bar Chart Race Oluştur</h3>
-
-  <form action="/viz/render" method="post" enctype="multipart/form-data" id="vizForm">
-    <div class="mb-3">
-      <label class="form-label">Excel Yükle (Opsiyonel):</label>
-      <input class="form-control" type="file" name="excel">
-    </div>
-
-    <div class="mb-3">
-      <label>Toplam Video Süresi (5-20 sn):</label>
-      <input class="form-range" type="range" name="duration" min="5" max="20" value="10" oninput="this.nextElementSibling.value = this.value">
-      <output>10</output> saniye
-    </div>
-
-    <div class="mb-3">
-      <label>Logoları Göster:</label>
-      <select name="show_logos" class="form-select">
-        <option value="no">Hayır</option>
-        <option value="yes">Evet</option>
-      </select>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-bordered" id="dataTable">
-        <thead>
+  <h1>Veri Yarışı Oluştur</h1>
+  <form action="/viz" method="post">
+    <table id="data-table">
+      <thead>
         <tr>
-          <th><input class="form-control" name="headers[]" value="Dönem"></th>
-          <th><input class="form-control" name="headers[]" value="Kategori A"></th>
-          <th><input class="form-control" name="headers[]" value="Kategori B"></th>
-          <th><input class="form-control" name="headers[]" value="Kategori C"></th>
+          <th>Dönem</th>
+          <th>Kategori A <br><input type="color" name="colors"></th>
+          <th>Kategori B <br><input type="color" name="colors"></th>
+          <th>Kategori C <br><input type="color" name="colors"></th>
+          <th><button type="button" onclick="addColumn()">+ Sütun</button></th>
         </tr>
-        </thead>
-        <tbody id="tableBody">
+      </thead>
+      <tbody>
         <tr>
-          <td><input name="row0[]" class="form-control" value="2020"></td>
-          <td><input name="row0[]" class="form-control" value="100"></td>
-          <td><input name="row0[]" class="form-control" value="80"></td>
-          <td><input name="row0[]" class="form-control" value="60"></td>
+          <td><input name="row_0" type="text"></td>
+          <td><input name="row_0" type="number"></td>
+          <td><input name="row_0" type="number"></td>
+          <td><input name="row_0" type="number"></td>
+          <td><button type="button" onclick="deleteRow(this)">-</button></td>
         </tr>
-        <tr>
-          <td><input name="row1[]" class="form-control" value="2021"></td>
-          <td><input name="row1[]" class="form-control" value="120"></td>
-          <td><input name="row1[]" class="form-control" value="95"></td>
-          <td><input name="row1[]" class="form-control" value="70"></td>
-        </tr>
-        </tbody>
-      </table>
-      <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRow()">Satır Ekle</button>
-      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addColumn()">Sütun Ekle</button>
-    </div>
-
-    <div class="mt-4 text-center">
-      <button class="btn btn-success" type="submit">Grafiği Oluştur</button>
-    </div>
+      </tbody>
+    </table>
+    <button type="button" onclick="addRow()">+ Satır</button><br>
+    <label>Video Süresi (saniye): <input type="number" name="duration" min="5" max="20" value="10"></label><br><br>
+    <input type="submit" value="Grafiği Oluştur">
   </form>
-</div>
 
-<script>
-  function addRow() {
-    const tbody = document.getElementById('tableBody');
-    const rowCount = tbody.rows.length;
-    const colCount = tbody.rows[0].cells.length;
-    let row = '<tr>';
-    for (let i = 0; i < colCount; i++) {
-      row += `<td><input name="row${rowCount}[]" class="form-control"></td>`;
+  <script>
+    function addRow() {
+      const table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
+      const cols = table.rows[0].cells.length;
+      const row = table.insertRow();
+      for (let i = 0; i < cols - 1; i++) {
+        const cell = row.insertCell();
+        cell.innerHTML = '<input name="row_' + table.rows.length + '" type="text">';
+      }
+      const delCell = row.insertCell();
+      delCell.innerHTML = '<button type="button" onclick="deleteRow(this)">-</button>';
     }
-    row += '</tr>';
-    tbody.insertAdjacentHTML('beforeend', row);
-  }
 
-  function addColumn() {
-    const headerRow = document.querySelector('thead tr');
-    const newHeader = document.createElement('th');
-    newHeader.innerHTML = `<input class="form-control" name="headers[]" value="Yeni Kategori">`;
-    headerRow.appendChild(newHeader);
+    function deleteRow(btn) {
+      const row = btn.parentNode.parentNode;
+      row.parentNode.removeChild(row);
+    }
 
-    const rows = document.querySelectorAll('#tableBody tr');
-    rows.forEach((tr, rowIndex) => {
-      const td = document.createElement('td');
-      td.innerHTML = `<input name="row${rowIndex}[]" class="form-control">`;
-      tr.appendChild(td);
-    });
-  }
-</script>
+    function addColumn() {
+      const table = document.getElementById("data-table");
+      const headerRow = table.rows[0];
+      const index = headerRow.cells.length - 1;
+      const newHeader = document.createElement('th');
+      newHeader.innerHTML = 'Kategori ' + String.fromCharCode(65 + index - 1) + '<br><input type="color" name="colors">';
+      headerRow.insertBefore(newHeader, headerRow.lastElementChild);
+
+      for (let i = 1; i < table.rows.length; i++) {
+        const newCell = table.rows[i].insertCell(index);
+        newCell.innerHTML = '<input name="row_' + i + '" type="number">';
+      }
+    }
+  </script>
 </body>
 </html>
