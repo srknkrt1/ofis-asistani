@@ -1,8 +1,7 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, after_this_request
-import os
+from flask import Flask, render_template, request
 import pandas as pd
 import bar_chart_race as bcr
-from werkzeug.utils import secure_filename
+import os
 import uuid
 
 app = Flask(__name__)
@@ -12,39 +11,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-@app.route("/pdf")
-def pdf():
-    return render_template("pdf.html")
-
-@app.route("/video")
-def video():
-    return render_template("video.html")
-
-@app.route('/hakkimizda')
-def hakkimizda():
-    return render_template('hakkimizda.html')
-
-@app.route('/iletisim', methods=['GET', 'POST'])
-def iletisim():
-    return render_template('iletisim.html')
-
-@app.route('/gizlilik')
-def gizlilik():
-    return render_template('gizlilik.html')
-
-@app.route('/kullanim')
-def kullanim():
-    return render_template('kullanim.html')
-
-@app.route('/dmca')
-def dmca():
-    return render_template('dmca.html')
-
-
 @app.route("/viz")
 def viz_page():
     return render_template("viz.html")
@@ -52,214 +18,50 @@ def viz_page():
 
 @app.route("/viz/render", methods=["POST"])
 def render_chart():
-    # 1. Excel Dosyası varsa onu oku
+    # 1. Süreyi al
+    duration = int(request.form.get("duration", 10))
+    show_logos = request.form.get("show_logos", "no") == "yes"
+
+    # 2. Excel varsa öncelikli
     if 'excel' in request.files and request.files['excel'].filename != '':
         excel_file = request.files['excel']
-        filename = secure_filename(excel_file.filename)
+        filename = str(uuid.uuid4()) + ".xlsx"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         excel_file.save(file_path)
-
-        try:
-            df = pd.read_excel(file_path, index_col=0)
-        except Exception as e:
-            return f"Hata oluştu: {str(e)}"
-
+        df = pd.read_excel(file_path, index_col=0)
     else:
-        # 2. Elle girilen verileri oku
-        data = {}
-        row_count = 0
+        # 3. Formdan tablo verisini al
+        headers = request.form.getlist("headers[]")
+        rows = []
+        row_index = 0
         while True:
-            row_key = f"row{row_count}_col0"
-            if row_key not in request.form:
+            row = request.form.getlist(f"row{row_index}[]")
+            if not row:
                 break
-            row_values = []
-            for col_index in range(1, 4):
-                val = request.form.get(f"row{row_count}_col{col_index}")
-                row_values.append(float(val) if val else 0)
-            data[request.form[row_key]] = row_values
-            row_count += 1
+            rows.append(row)
+            row_index += 1
+        df = pd.DataFrame(rows, columns=headers)
+        df.set_index(headers[0], inplace=True)
+        df = df.apply(pd.to_numeric, errors='coerce').fillna(0)
 
-        df = pd.DataFrame.from_dict(data, orient='index', columns=['Kategori A', 'Kategori B', 'Kategori C'])
-
-    # 3. Data uygun formda mı?
-    try:
-        df = df.astype(float)
-    except:
-        return "Veriler sayısal değil. Lütfen tüm hücreleri doldurun."
-
-    # 4. Bar chart race oluştur
-    output_file = os.path.join(RESULT_FOLDER, f"{uuid.uuid4().hex}.mp4")
-    bcr.bar_chart_race(
-        df=df,
-        filename=output_file,
-        orientation='h',
-        sort='desc',
-        n_bars=6,
-        period_length=500,
-        title='Veri Yarışı',
-        steps_per_period=20,
-        interpolate_period=True,
-        bar_size=.95,
-    )
-
-    return render_template("viz_result.html", video_file=output_file)
-
-
-@app.route('/pdf/merge', methods=['POST'])
-def merge_pdfs():
-    uploaded_files = request.files.getlist('pdfs')
-    order = request.form.getlist('order[]')
-
-    if not uploaded_files or not order:
-        return "Dosyalar veya sıralama eksik.", 400
+    # 4. Bar Chart Race Oluştur
+    filename = f"{uuid.uuid4().hex}.mp4"
+    out_path = os.path.join(RESULT_FOLDER, filename)
 
     try:
-        ordered_files = [uploaded_files[int(i)] for i in order]
-    except (ValueError, IndexError):
-        return "Geçersiz sıralama verisi.", 400
-
-    temp_paths = []
-    for file in ordered_files:
-        temp_path = os.path.join(UPLOAD_FOLDER, secure_filename(file.filename))
-        file.save(temp_path)
-        temp_paths.append(temp_path)
-
-    output_path = os.path.join(UPLOAD_FOLDER, f"merged_{uuid4().hex}.pdf")
-    birlestir_pdf_listesi(temp_paths, output_path)
-
-    # Geçici dosyaları temizle
-    for path in temp_paths:
-        os.remove(path)
-
-    return send_file(output_path, as_attachment=True)
-
-@app.route("/pdf/split", methods=["POST"])
-def pdf_split():
-    f = request.files["pdf"]
-    bas = int(request.form["start"])
-    bit = int(request.form["end"])
-    tempdir = tempfile.mkdtemp()
-    path = os.path.join(tempdir, f.filename)
-    f.save(path)
-    output = os.path.join(tempdir, "split.pdf")
-    bol_pdf(path, bas, bit, output)
-    return send_file(output, as_attachment=True)
-
-@app.route('/pdf/rotate', methods=['POST'])
-def rotate_pdf():
-    file = request.files['pdf']
-    angle = int(request.form['angle'])
-    pages_input = request.form['pages']  # örn: "1-3"
-
-    try:
-        start, end = map(int, pages_input.strip().split('-'))
-    except ValueError:
-        return "Sayfa aralığı formatı hatalı. Örn: 1-3", 400
-
-    reader = PdfReader(file)
-    writer = PdfWriter()
-    num_pages = len(reader.pages)
-
-    if not (1 <= start <= end <= num_pages):
-        return f"Geçersiz sayfa aralığı. PDF {num_pages} sayfadan oluşuyor.", 400
-
-    for i, page in enumerate(reader.pages):
-        if start - 1 <= i <= end - 1:
-            page = page.rotate(angle)
-        writer.add_page(page)
-
-    output_stream = BytesIO()
-    writer.write(output_stream)
-    output_stream.seek(0)
-
-    return send_file(output_stream, as_attachment=True, download_name='rotated.pdf')
-
-@app.route("/pdf/compress", methods=["POST"])
-def pdf_compress():
-    f = request.files["pdf"]
-    kalite = request.form["quality"]
-    kalite_map = {
-        "ekstrem": "/screen", "düşük": "/ebook",
-        "orta": "/printer", "yüksek": "/prepress"
-    }
-    tempdir = tempfile.mkdtemp()
-    path = os.path.join(tempdir, f.filename)
-    f.save(path)
-    output = os.path.join(tempdir, "compressed.pdf")
-    sikistir_pdf(path, output, kalite_map.get(kalite, "/ebook"))
-    return send_file(output, as_attachment=True)
-
-@app.route("/pdf/pdf2word", methods=["POST"])
-def pdf2word():
-    f = request.files["pdf"]
-    tempdir = tempfile.mkdtemp()
-    input_path = os.path.join(tempdir, f.filename)
-    output_path = os.path.join(tempdir, "converted.docx")
-    f.save(input_path)
-    pdf_to_word(input_path, output_path)
-    return send_file(output_path, as_attachment=True)
-
-@app.route('/pdf/reorder', methods=['GET', 'POST'])
-def reorder_pdf():
-    if request.method == 'POST':
-        pdf_file = request.files['pdf']
-        if not pdf_file:
-            return "Dosya yüklenmedi", 400
-
-        filename = secure_filename(pdf_file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        pdf_file.save(filepath)
-
-        doc = fitz.open(filepath)
-        image_filenames = []
-
-        for i in range(len(doc)):
-            page = doc.load_page(i)
-            pix = page.get_pixmap(dpi=100)
-            img_name = f"{uuid4().hex}.png"
-            img_path = os.path.join(IMAGE_FOLDER, img_name)
-            pix.save(img_path)
-            image_filenames.append((img_name, i))  # (filename, page_index)
-
-        doc.close()
-        return render_template('reorder.html', images=image_filenames, pdf_path=filepath)
-
-    return render_template('reorder.html', images=None)
-    
-@app.route('/pdf/reorder/submit', methods=['POST'])
-def submit_reorder():
-    order = request.form.getlist('order[]')
-    original_pdf_path = request.form['pdf_path']
-
-    # Geçersiz veya boş değerleri filtrele + kontrol et
-    try:
-        page_indices = [int(i) for i in order if i.strip().isdigit()]
-    except ValueError:
-        return "Geçersiz sayfa sıralaması gönderildi", 400
-
-    # Dosya okuma ve yeniden yazma
-    reader = PdfReader(original_pdf_path)
-    writer = PdfWriter()
-
-    for page_index in page_indices:
-        if 0 <= page_index < len(reader.pages):
-            writer.add_page(reader.pages[page_index])
-        else:
-            return f"Geçersiz sayfa indexi: {page_index}", 400
-
-    output_path = os.path.join(UPLOAD_FOLDER, f"reordered_{uuid4().hex}.pdf")
-    with open(output_path, 'wb') as f:
-        writer.write(f)
-
-    # Geçici dosyaları temizle
-    try:
-        os.remove(original_pdf_path)
-        for filename in os.listdir(IMAGE_FOLDER):
-            os.remove(os.path.join(IMAGE_FOLDER, filename))
+        bcr.bar_chart_race(
+            df=df,
+            filename=out_path,
+            orientation='h',
+            sort='desc',
+            n_bars=min(6, df.shape[1]),
+            period_length=(duration * 1000) // len(df),
+            steps_per_period=20,
+            interpolate_period=True,
+            title='Veri Yarışı',
+            bar_size=.95
+        )
     except Exception as e:
-        print("Silme hatası:", e)
+        return f"Bar Chart Race oluşturulamadı: {str(e)}"
 
-    return send_file(output_path, as_attachment=True)
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return render_template("viz_result.html", video_file=out_path)
