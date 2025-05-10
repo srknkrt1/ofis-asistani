@@ -8,3 +8,6 @@ pdf2image
 python-docx
 pytesseract
 PyMuPDF
+pandas 
+bar_chart_race 
+openpyxl
