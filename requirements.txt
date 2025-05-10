@@ -1,13 +1,7 @@
 Flask
 gunicorn
-PyPDF2
-yt_dlp
-pdf2docx
-docx2pdf
-pdf2image
 python-docx
-pytesseract
-PyMuPDF
 pandas 
 bar_chart_race 
 openpyxl
+uuid
