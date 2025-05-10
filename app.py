@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for, after_this_request
 import os, tempfile
 import subprocess
+import pandas as pd
+import bar_chart_race as bcr
 from docx import Document  # eksiktiyse eklenmeli
 import fitz  # PyMuPDF
 import threading
 from werkzeug.utils import secure_filename
-from uuid import uuid4
+import uuid4
 from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
 from pdf_tools import (
@@ -14,12 +16,11 @@ from pdf_tools import (
 )
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
-app.config['UPLOAD_FOLDER'] = 'uploads'  # veya senin istediğin başka bir dizin
 UPLOAD_FOLDER = 'uploads'
-IMAGE_FOLDER = 'static/temp_images'
+RESULT_FOLDER = 'static/animations'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(IMAGE_FOLDER, exist_ok=True)
+os.makedirs(RESULT_FOLDER, exist_ok=True)
 
 
 @app.route("/")
@@ -53,6 +54,66 @@ def kullanim():
 @app.route('/dmca')
 def dmca():
     return render_template('dmca.html')
+
+
+@app.route("/viz")
+def viz_page():
+    return render_template("viz.html")
+
+
+@app.route("/viz/render", methods=["POST"])
+def render_chart():
+    # 1. Excel Dosyası varsa onu oku
+    if 'excel' in request.files and request.files['excel'].filename != '':
+        excel_file = request.files['excel']
+        filename = secure_filename(excel_file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        excel_file.save(file_path)
+
+        try:
+            df = pd.read_excel(file_path, index_col=0)
+        except Exception as e:
+            return f"Hata oluştu: {str(e)}"
+
+    else:
+        # 2. Elle girilen verileri oku
+        data = {}
+        row_count = 0
+        while True:
+            row_key = f"row{row_count}_col0"
+            if row_key not in request.form:
+                break
+            row_values = []
+            for col_index in range(1, 4):
+                val = request.form.get(f"row{row_count}_col{col_index}")
+                row_values.append(float(val) if val else 0)
+            data[request.form[row_key]] = row_values
+            row_count += 1
+
+        df = pd.DataFrame.from_dict(data, orient='index', columns=['Kategori A', 'Kategori B', 'Kategori C'])
+
+    # 3. Data uygun formda mı?
+    try:
+        df = df.astype(float)
+    except:
+        return "Veriler sayısal değil. Lütfen tüm hücreleri doldurun."
+
+    # 4. Bar chart race oluştur
+    output_file = os.path.join(RESULT_FOLDER, f"{uuid.uuid4().hex}.mp4")
+    bcr.bar_chart_race(
+        df=df,
+        filename=output_file,
+        orientation='h',
+        sort='desc',
+        n_bars=6,
+        period_length=500,
+        title='Veri Yarışı',
+        steps_per_period=20,
+        interpolate_period=True,
+        bar_size=.95,
+    )
+
+    return render_template("viz_result.html", video_file=output_file)
 
 
 @app.route('/pdf/merge', methods=['POST'])
