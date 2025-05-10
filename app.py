@@ -1,19 +1,9 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for, after_this_request
-import os, tempfile
-import subprocess
+import os
 import pandas as pd
 import bar_chart_race as bcr
-from docx import Document  # eksiktiyse eklenmeli
-import fitz  # PyMuPDF
-import threading
 from werkzeug.utils import secure_filename
 import uuid
-from PyPDF2 import PdfReader, PdfWriter
-from io import BytesIO
-from pdf_tools import (
-    birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf,
-    pdf_to_word
-)
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -21,7 +11,6 @@ RESULT_FOLDER = 'static/animations'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
-
 
 @app.route("/")
 def index():
