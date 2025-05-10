@@ -299,6 +299,13 @@ document.getElementById("createVideoButton").addEventListener("click", function 
   });
 
   const duration = Number(document.getElementById("durationRange").value);
+  
+  // Payload'ı tanımlayın
+  const payload = {
+    tableData: tableData,
+    colors: colors,
+    duration: duration
+  };
 
   fetch('/generate_video', {
     method: 'POST',
