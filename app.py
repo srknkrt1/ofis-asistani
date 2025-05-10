@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 import os, tempfile
 import subprocess
 from docx import Document  # eksiktiyse eklenmeli
-from video_tools import indir_video, indir_instagram, indir_twitter,split_audio
 import fitz  # PyMuPDF
 import threading
 from werkzeug.utils import secure_filename
