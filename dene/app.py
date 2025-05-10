@@ -94,7 +94,7 @@ def generate_video():
 
 @app.route('/viz_result')
 def viz_result():
-    video_path = request.args.get('video_path')  # or handle it another way
+    video_path = request.args.get('video_path')  # URL parametre olarak al
     return render_template('viz_result.html', video_path=video_path)
 
 if __name__ == "__main__":
