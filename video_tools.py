@@ -1,6 +1,4 @@
 from yt_dlp import YoutubeDL
-from pydub import AudioSegment
-from pydub.utils import which
 import uuid
 import os
 import re
