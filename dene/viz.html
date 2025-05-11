@@ -155,11 +155,6 @@
     <button class="btn btn-outline-secondary btn-sm btn-icon" onclick="addRow()">➕</button>
   </div>
 
-  <div class="mb-3 mt-3">
-    <label for="durationRange" class="form-label">🎬 Video Süresi (5-20 saniye): <span id="durationLabel">10</span>s</label>
-    <input type="range" class="form-range" min="5" max="20" step="1" value="10" id="durationRange">
-  </div>
-
   <div class="button-group mt-4">
     <button id="createVideoButton" class="btn btn-primary">🎥 Video Oluştur</button>
     <a href="/" class="btn btn-info">Ana Sayfa</a>
@@ -212,7 +207,7 @@ document.getElementById('excelUpload').addEventListener('change', function (e) {
 function addRow() {
   const tableBody = document.getElementById("dataBody");
   const row = document.createElement("tr");
-  const columnCount = tableBody.rows[0].cells.length - 1; // Son sütun 'İşlem'
+  const columnCount = tableBody.rows[0].cells.length - 1;
 
   for (let i = 0; i < columnCount; i++) {
     const cell = document.createElement("td");
@@ -254,7 +249,7 @@ function addColumn() {
 function removeColumn() {
   const table = document.getElementById("dataTable");
   const headerRow = table.tHead.rows[0];
-  if (headerRow.cells.length > 2) { // en az bir kategori kalsın
+  if (headerRow.cells.length > 2) {
     headerRow.deleteCell(headerRow.cells.length - 2);
     const rows = table.tBodies[0].rows;
     for (let row of rows) {
@@ -263,17 +258,12 @@ function removeColumn() {
   }
 }
 
-document.getElementById("durationRange").addEventListener("input", function() {
-  document.getElementById("durationLabel").textContent = this.value;
-});
-  
-  document.getElementById("createVideoButton").addEventListener("click", function () {
+document.getElementById("createVideoButton").addEventListener("click", function () {
   const rows = document.querySelectorAll("#dataTable tbody tr");
   const tableData = [];
   const headers = document.querySelectorAll("#dataTable thead th");
   const headerNames = [];
 
-  // Başlık isimlerini al (Dönem, Kategori 1, Kategori 2, ...)
   headers.forEach((th, index) => {
     if (index < headers.length - 1) {
       const editableDiv = th.querySelector(".editable");
@@ -281,7 +271,6 @@ document.getElementById("durationRange").addEventListener("input", function() {
     }
   });
 
-  // Tablo verilerini topla
   rows.forEach(row => {
     const rowData = {};
     const cells = row.querySelectorAll("td:not(:last-child)");
@@ -291,25 +280,18 @@ document.getElementById("durationRange").addEventListener("input", function() {
     tableData.push(rowData);
   });
 
-  // Renkleri oku
   const colorPickers = document.querySelectorAll(".color-picker");
   const colors = {};
   colorPickers.forEach((picker, i) => {
-    const label = headerNames[i + 1]; // ilk başlık "Dönem", sonrakiler kategoriler
+    const label = headerNames[i + 1];
     colors[label] = picker.value;
   });
 
-  // Video süresi
-  const duration = Number(document.getElementById("durationRange").value);
-
-  // Payload'ı tanımlayın
   const payload = {
     tableData: tableData,
-    colors: colors,
-    duration: duration
+    colors: colors
   };
 
-  // Sunucuya POST isteği gönder
   fetch('/generate_video', {
     method: 'POST',
     headers: {
@@ -330,7 +312,6 @@ document.getElementById("durationRange").addEventListener("input", function() {
     alert("❌ Sunucu hatası oluştu.");
   });
 });
-
 </script>
 
 </body>
