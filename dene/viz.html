@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Veri Görselleştirme - DijitalHamal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f4f7fa;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .nav-tabs .nav-link.active {
+      background-color: #2c3e50;
+      color: white;
+    }
+    .tab-pane {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      margin-top: 20px;
+    }
+    .form-control, .form-select {
+      margin-bottom: 15px;
+    }
+    .footer-links {
+      background-color: #e0e0e0;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 14px;
+      margin-top: auto;
+    }
+    .footer-links a {
+      margin: 0 15px;
+      color: #333;
+      text-decoration: none;
+    }
+    .color-picker {
+      width: 20px;
+      height: 20px;
+      border: none;
+      margin-right: 5px;
+    }
+    .editable {
+      border: 1px dashed #ccc;
+      padding: 4px;
+      min-width: 60px;
+    }
+    .table-wrapper {
+      position: relative;
+    }
+    .row-controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 5px;
+    }
+    .column-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: flex-end;
+    }
+    .btn-icon {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .button-group button {
+      display: inline-block;
+      padding: 15px 30px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      border-radius: 12px;
+      margin: 10px;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg" style="background-color: #2c3e50;">
+  <div class="container-fluid justify-content-center">
+    <span class="navbar-brand mb-0 h1 text-white">📊 Veri Görselleştirme</span>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <h4 class="mb-3">🏁 Yarışan Grafik Verileri</h4>
+
+  <div class="mb-3">
+    <label for="excelUpload" class="form-label">Excel Dosyası Yükle</label>
+    <input class="form-control" type="file" id="excelUpload" accept=".xlsx">
+  </div>
+
+  <div class="table-wrapper">
+    <div class="column-controls">
+      <button class="btn btn-outline-secondary btn-sm btn-icon" onclick="addColumn()">➕</button>
+      <button class="btn btn-outline-secondary btn-sm btn-icon" onclick="removeColumn()">➖</button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered text-center align-middle" id="dataTable">
+        <thead>
+          <tr>
+            <th><div class="editable" contenteditable="true">Dönem</div></th>
+            <th>
+              <div class="d-flex align-items-center justify-content-center">
+                <input type="color" class="color-picker" value="#ff0000">
+                <div class="editable" contenteditable="true">Kategori 1</div>
+              </div>
+            </th>
+            <th>
+              <div class="d-flex align-items-center justify-content-center">
+                <input type="color" class="color-picker" value="#00ff00">
+                <div class="editable" contenteditable="true">Kategori 2</div>
+              </div>
+            </th>
+            <th>
+              <div class="d-flex align-items-center justify-content-center">
+                <input type="color" class="color-picker" value="#0000ff">
+                <div class="editable" contenteditable="true">Kategori 3</div>
+              </div>
+            </th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody">
+          <tr>
+            <td contenteditable="true">2020</td>
+            <td contenteditable="true">10</td>
+            <td contenteditable="true">20</td>
+            <td contenteditable="true">30</td>
+            <td><button class="btn btn-sm btn-danger" onclick="removeRow(this)">Sil</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row-controls">
+    <button class="btn btn-outline-secondary btn-sm btn-icon" onclick="addRow()">➕</button>
+  </div>
+
+  <div class="button-group mt-4">
+    <button id="createVideoButton" class="btn btn-primary">🎥 Video Oluştur</button>
+    <a href="/" class="btn btn-info">Ana Sayfa</a>
+  </div>
+</div>
+
+<div class="footer-links">
+  <a href="/hakkimizda">Hakkımızda</a>
+  <a href="/iletisim">İletişim</a>
+  <a href="/gizlilik">Gizlilik Politikası</a>
+  <a href="/kullanim">Kullanım Koşulları</a>
+  <a href="/dmca">DMCA</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.getElementById('excelUpload').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const data = new Uint8Array(event.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      const tableBody = document.getElementById("dataBody");
+      tableBody.innerHTML = "";
+
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = document.createElement("tr");
+        jsonData[i].forEach(cellData => {
+          const cell = document.createElement("td");
+          cell.contentEditable = "true";
+          cell.textContent = cellData;
+          row.appendChild(cell);
+        });
+        const deleteCell = document.createElement("td");
+        deleteCell.innerHTML = `<button class="btn btn-sm btn-danger" onclick="removeRow(this)">Sil</button>`;
+        row.appendChild(deleteCell);
+        tableBody.appendChild(row);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+});
+
+function addRow() {
+  const tableBody = document.getElementById("dataBody");
+  const row = document.createElement("tr");
+  const columnCount = tableBody.rows[0].cells.length - 1;
+
+  for (let i = 0; i < columnCount; i++) {
+    const cell = document.createElement("td");
+    cell.contentEditable = "true";
+    row.appendChild(cell);
+  }
+
+  const deleteCell = document.createElement("td");
+  deleteCell.innerHTML = `<button class="btn btn-sm btn-danger" onclick="removeRow(this)">Sil</button>`;
+  row.appendChild(deleteCell);
+
+  tableBody.appendChild(row);
+}
+
+function removeRow(button) {
+  const row = button.closest("tr");
+  row.remove();
+}
+
+function addColumn() {
+  const table = document.getElementById("dataTable");
+  const headerRow = table.tHead.rows[0];
+  const newHeader = document.createElement("th");
+  newHeader.innerHTML = `
+    <div class="d-flex align-items-center justify-content-center">
+      <input type="color" class="color-picker" value="#cccccc">
+      <div class="editable" contenteditable="true">Yeni Kategori</div>
+    </div>`;
+  headerRow.insertBefore(newHeader, headerRow.lastElementChild);
+
+  const rows = table.tBodies[0].rows;
+  for (let row of rows) {
+    const newCell = document.createElement("td");
+    newCell.contentEditable = "true";
+    row.insertBefore(newCell, row.lastElementChild);
+  }
+}
+
+function removeColumn() {
+  const table = document.getElementById("dataTable");
+  const headerRow = table.tHead.rows[0];
+  if (headerRow.cells.length > 2) {
+    headerRow.deleteCell(headerRow.cells.length - 2);
+    const rows = table.tBodies[0].rows;
+    for (let row of rows) {
+      row.deleteCell(row.cells.length - 2);
+    }
+  }
+}
+
+document.getElementById("createVideoButton").addEventListener("click", function () {
+  const rows = document.querySelectorAll("#dataTable tbody tr");
+  const tableData = [];
+  const headers = document.querySelectorAll("#dataTable thead th");
+  const headerNames = [];
+
+  headers.forEach((th, index) => {
+    if (index < headers.length - 1) {
+      const editableDiv = th.querySelector(".editable");
+      headerNames.push(editableDiv ? editableDiv.innerText.trim() : `Kolon ${index}`);
+    }
+  });
+
+  rows.forEach(row => {
+    const rowData = {};
+    const cells = row.querySelectorAll("td:not(:last-child)");
+    cells.forEach((cell, i) => {
+      rowData[headerNames[i]] = isNaN(cell.innerText) ? cell.innerText : Number(cell.innerText);
+    });
+    tableData.push(rowData);
+  });
+
+  const colorPickers = document.querySelectorAll(".color-picker");
+  const colors = {};
+  colorPickers.forEach((picker, i) => {
+    const label = headerNames[i + 1];
+    colors[label] = picker.value;
+  });
+
+  const payload = {
+    tableData: tableData,
+    colors: colors
+  };
+
+  fetch('/generate_video', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(response => response.json())
+  .then(result => {
+    console.log("🔍 Sunucudan dönen yanıt:", result);
+    if (result.video_url) {
+      window.location.href = "/viz_result?video_path=" + encodeURIComponent(result.video_url);
+  } else {
+    alert("❌ Video oluşturulurken bir hata oluştu.");
+  }
+});
+
+  .catch(error => {
+    console.error('Hata:', error);
+    alert("❌ Sunucu hatası oluştu.");
+  });
+});
+</script>
+
+</body>
+</html>
