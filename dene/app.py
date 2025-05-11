@@ -3,7 +3,6 @@ import os, tempfile
 import subprocess
 import pandas as pd
 import json
-import bar_chart_race as bcr
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from docx import Document  # eksiktiyse eklenmeli
@@ -157,66 +156,79 @@ def upload_file():
 @app.route('/generate_video', methods=['POST'])
 def generate_video():
     print("FFmpeg erişim testi başlatılıyor...")
+
+    # FFmpeg'in çalışıp çalışmadığını test et
     result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
     print("FFmpeg çıktısı:")
     print(result.stdout)
     print("FFmpeg hata çıktısı:")
     print(result.stderr)
+
     import bar_chart_race as bcr
 
+    # İstekten gelen veriyi al
     data = request.json
 
+    # Geçerli veri kontrolü
     if not data or 'tableData' not in data or 'colors' not in data:
         return jsonify({"error": "Geçersiz veri."}), 400
 
     try:
+        # Veriyi pandas DataFrame'e dönüştür
         df_raw = pd.DataFrame(data['tableData'])
 
-        # İlk sütun zaman (ör: Hafta), diğerleri yarışanlar (ör: FB, GS, BJK)
+        # İlk sütun zaman (ör: Hafta), diğer sütunlar yarışanlar (ör: FB, GS, BJK)
         time_col = df_raw.columns[0]
         categories = df_raw.columns[1:]
 
+        # Zaman sütununu string olarak dönüştür
         df_raw[time_col] = df_raw[time_col].astype(str)
+
+        # Zaman sütununu index yap
         df_raw.set_index(time_col, inplace=True)
 
+        # Diğer kategorileri sayısal verilere dönüştür
         df = df_raw[categories].apply(pd.to_numeric, errors='coerce')
 
-        # Transpose: satırlar zaman, sütunlar yarışanlar olacak şekilde döndür
+        # Transpose işlemi: Satırlar zaman, sütunlar yarışanlar olacak şekilde
         df = df.T
         df = df.T  # bar_chart_race zaten bu şekilde istiyor (index: zaman)
 
+        # Renkler verisi
         colors = data.get('colors', {})
         bar_colors = [colors.get(col, "#333333") for col in df.columns]
 
         # Benzersiz dosya adı oluştur
         video_filename = f"bar_race_{uuid.uuid4().hex}.mp4"
-        output_path = os.path.join('downloads', video_filename)
+        output_path = os.path.join(app.config['DOWNLOADS_FOLDER'], video_filename)
 
-        # Video oluştur
+        # Video oluşturma işlemi
         bcr.bar_chart_race(
-        df=your_dataframe,
-        filename='static/exports/output.mp4',
-        orientation='h',
-        sort='desc',
-        n_bars=5,
-        fixed_order=False,
-        fixed_max=True,
-        steps_per_period=10,
-        period_length=500,
-        interpolate_period=False,
-        title='Puan Yarışı',
-        bar_size=.95,
-        cmap='dark12',
-        filter_column_colors=True,
-        scale='linear',
-)
+            df=df,
+            filename=output_path,  # Video dosyasının kaydedileceği yol
+            orientation='h',
+            sort='desc',
+            n_bars=5,  # Ekranda gösterilecek bar sayısı
+            fixed_order=False,  # Sıralamanın her zaman aynı olmasını engelle
+            fixed_max=True,
+            steps_per_period=10,  # Bir adımda kaç çerçeve
+            period_length=500,  # Her periyot için bekleme süresi (ms)
+            interpolate_period=False,
+            title='Puan Yarışı',  # Başlık
+            bar_size=.95,
+            cmap='dark12',  # Renk paleti
+            filter_column_colors=True,
+            scale='linear',
+        )
 
+        # Video oluşturulmuşsa, video yolunu döndür
         if os.path.exists(output_path):
             return jsonify({"video_url": f"/downloads/{video_filename}"}), 200
         else:
             return jsonify({"error": "Video oluşturulamadı."}), 500
 
     except Exception as e:
+        print(f"Video oluşturulurken hata oluştu: {str(e)}")
         return jsonify({"error": f"Hata oluştu: {str(e)}"}), 500
 
 # Video gösterim sayfası
