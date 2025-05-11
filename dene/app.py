@@ -150,7 +150,8 @@ def upload_file():
 # Video oluşturma işlemi
 @app.route('/generate_video', methods=['POST'])
 def generate_video():
-    import bar_chart_race as bcr
+    import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation, FFMpegWriter
 
     data = request.json
 
@@ -160,45 +161,49 @@ def generate_video():
     try:
         df_raw = pd.DataFrame(data['tableData'])
 
-        # İlk sütun zaman (ör: Hafta), diğerleri yarışanlar (ör: FB, GS, BJK)
+        # İlk sütun zaman (örn. "Hafta"), diğerleri yarışanlar (örn. "FB", "GS", "BJK")
         time_col = df_raw.columns[0]
-        categories = df_raw.columns[1:]
-
         df_raw[time_col] = df_raw[time_col].astype(str)
         df_raw.set_index(time_col, inplace=True)
-
-        df = df_raw[categories].apply(pd.to_numeric, errors='coerce')
-
-        # Transpose: satırlar zaman, sütunlar yarışanlar olacak şekilde döndür
-        df = df.T
-        df = df.T  # bar_chart_race zaten bu şekilde istiyor (index: zaman)
+        df = df_raw.apply(pd.to_numeric, errors='coerce')
 
         colors = data.get('colors', {})
-        bar_colors = [colors.get(col, "#333333") for col in df.columns]
+        bar_colors = [colors.get(str(col), "#333333") for col in df.columns]
 
-        # Benzersiz dosya adı oluştur
+        # Dosya yolu ayarla
         video_filename = f"bar_race_{uuid.uuid4().hex}.mp4"
         output_path = os.path.join('downloads', video_filename)
 
-        # Video oluştur
-        bcr.bar_chart_race(
-            df=df,
-            filename=output_path,
-            orientation='h',
-            sort='desc',
-            n_bars=10,
-            fixed_order=False,
-            fixed_max=True,
-            steps_per_period=25,
-            period_length=800,
-            colors=bar_colors,
-            period_label={'x': .99, 'y': .1, 'ha': 'right', 'va': 'center'},
-            period_fmt='Hafta {x}',
-            title='Haftalık Takım Yarışı',
-            bar_size=.95,
-            figsize=(6, 4),
-            dpi=144
+        # Matplotlib ayarları
+        fig, ax = plt.subplots(figsize=(8, 5))
+        plt.tight_layout()
+
+        def update(frame):
+            ax.clear()
+            current_data = df.iloc[:frame + 1]  # mevcut haftaya kadar olan veriler
+
+            # Her kategori için son değer alınır
+            latest = current_data.iloc[-1].sort_values(ascending=True)
+
+            colors_ordered = [colors.get(str(cat), "#333333") for cat in latest.index]
+
+            ax.barh(latest.index, latest.values, color=colors_ordered)
+            ax.set_title(f"{df.index[frame]} itibariyle Puan Durumu")
+            ax.set_xlim(0, df.max().max() * 1.1)
+            ax.set_xlabel("Puan")
+            ax.grid(axis='x', linestyle='--', alpha=0.5)
+
+        anim = FuncAnimation(
+            fig,
+            update,
+            frames=len(df),
+            interval=800,  # her kare için milisaniye
+            repeat=False
         )
+
+        writer = FFMpegWriter(fps=2)
+        anim.save(output_path, writer=writer)
+        plt.close()
 
         if os.path.exists(output_path):
             return jsonify({"video_url": f"/downloads/{video_filename}"}), 200
