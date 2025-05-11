@@ -150,51 +150,50 @@ def upload_file():
     return jsonify(df.to_dict(orient='records'))
 
 # Video oluşturma işlemi
+# Video oluşturma işlemi
 @app.route('/generate_video', methods=['POST'])
 def generate_video():
     data = request.json
 
-    # Veri kontrolü: 'tableData' ve 'colors' anahtarlarının olup olmadığını kontrol et
     if not data or 'tableData' not in data or 'colors' not in data:
         return jsonify({"error": "Geçersiz veri."}), 400
 
     try:
-        # Data'yı DataFrame'e çevir
         df = pd.DataFrame(data['tableData'])
-
-        # İlk sütunu kategori olarak kullan
         category_col = df.columns[0]
         df.set_index(category_col, inplace=True)
-
-        # Sayısal olmayan verileri NaN olarak çevir
         df = df.apply(pd.to_numeric, errors='coerce')
 
-        # Eğer NaN değer varsa, hata mesajı döndür
         if df.isnull().values.any():
             return jsonify({"error": "Veri eksik veya geçersiz."}), 400
 
-        # Renkleri al
         colors = data.get('colors', {})
         if not colors:
             return jsonify({"error": "Renkler eksik."}), 400
 
-        # Video dosya adını oluştur
+        # Sabit ayarlar (süre kaldırıldı)
+        steps_per_period = 30
+        period_length = 700  # 0.7 saniye per dönem
+
         video_filename = f"race_{uuid.uuid4().hex}.mp4"
         output_path = os.path.join('downloads', video_filename)
 
-        # Video oluşturma işlemi
-        bcr.bar_chart_race(
-            df=df,
-            filename=output_path,
-            orientation='h',
-            sort='desc',
-            n_bars=10,
-            fixed_order=False,
-            steps_per_period=30,
-            period_length=500,  # Sabit süre, örn. 500ms (ayarlanabilir)
-            figsize=(6, 3.5),
-            bar_kwargs={'color': list(colors.values())} if colors else None
-        )
+        try:
+            bcr.bar_chart_race(
+                df=df,
+                filename=output_path,
+                orientation='h',
+                sort='desc',
+                n_bars=10,
+                fixed_order=False,
+                steps_per_period=steps_per_period,
+                period_length=period_length,
+                figsize=(6, 3.5),
+                bar_kwargs={'color': list(colors.values())}  
+            )
+        except Exception as e:
+            print("Video oluşturulurken hata:", str(e))
+            return jsonify({"error": f"Video oluşturulurken bir hata oluştu: {str(e)}"}), 500
 
         return jsonify({"video_url": f"/downloads/{video_filename}"}), 200
 
