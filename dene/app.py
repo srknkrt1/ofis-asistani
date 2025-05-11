@@ -150,6 +150,8 @@ def upload_file():
 # Video oluşturma işlemi
 @app.route('/generate_video', methods=['POST'])
 def generate_video():
+    import bar_chart_race as bcr
+
     data = request.json
 
     if not data or 'tableData' not in data or 'colors' not in data:
@@ -158,45 +160,45 @@ def generate_video():
     try:
         df_raw = pd.DataFrame(data['tableData'])
 
-        # İlk sütun: Zaman (Hafta/Yıl), Geri kalanlar: Kategoriler (FB, GS, BJK)
+        # İlk sütun zaman (ör: Hafta), diğerleri yarışanlar (ör: FB, GS, BJK)
         time_col = df_raw.columns[0]
         categories = df_raw.columns[1:]
 
-        # Transpose etmek için zaman kolonunu indeks yap
         df_raw[time_col] = df_raw[time_col].astype(str)
         df_raw.set_index(time_col, inplace=True)
 
         df = df_raw[categories].apply(pd.to_numeric, errors='coerce')
 
-        if df.isnull().values.any():
-            return jsonify({"error": "Veri eksik veya geçersiz."}), 400
-
-        df = df.T  # transpose: şimdi satırlar FB, GS, BJK — sütunlar Haftalar
+        # Transpose: satırlar zaman, sütunlar yarışanlar olacak şekilde döndür
+        df = df.T
+        df = df.T  # bar_chart_race zaten bu şekilde istiyor (index: zaman)
 
         colors = data.get('colors', {})
+        bar_colors = [colors.get(col, "#333333") for col in df.columns]
 
-        # Output path
+        # Benzersiz dosya adı oluştur
         video_filename = f"bar_race_{uuid.uuid4().hex}.mp4"
         output_path = os.path.join('downloads', video_filename)
 
-        import matplotlib.pyplot as plt
-        from matplotlib.animation import FuncAnimation, FFMpegWriter
-
-        fig, ax = plt.subplots(figsize=(8, 5))
-
-        def update(frame):
-            ax.clear()
-            week = df.columns[frame]
-            vals = df[week].sort_values(ascending=True)
-            bar_colors = [colors.get(str(cat), "#333333") for cat in vals.index]
-            ax.barh(vals.index, vals.values, color=bar_colors)
-            ax.set_title(f"Hafta: {week}")
-            ax.set_xlim(0, df.max().max())
-
-        anim = FuncAnimation(fig, update, frames=len(df.columns), interval=700, repeat=False)
-        writer = FFMpegWriter(fps=2)
-        anim.save(output_path, writer=writer)
-        plt.close()
+        # Video oluştur
+        bcr.bar_chart_race(
+            df=df,
+            filename=output_path,
+            orientation='h',
+            sort='desc',
+            n_bars=10,
+            fixed_order=False,
+            fixed_max=True,
+            steps_per_period=25,
+            period_length=800,
+            colors=bar_colors,
+            period_label={'x': .99, 'y': .1, 'ha': 'right', 'va': 'center'},
+            period_fmt='Hafta {x}',
+            title='Haftalık Takım Yarışı',
+            bar_size=.95,
+            figsize=(6, 4),
+            dpi=144
+        )
 
         if os.path.exists(output_path):
             return jsonify({"video_url": f"/downloads/{video_filename}"}), 200
