@@ -34,10 +34,6 @@ os.makedirs(app.config['DOWNLOADS_FOLDER'], exist_ok=True)
 
 AudioSegment.converter = "/usr/bin/ffmpeg"
 
-# FFMpegWriter'ı özel log seviyesini ayarlayarak tanımlayın
-FFMpegWriter = animation.FFMpegWriter
-writer = FFMpegWriter(fps=30, metadata=dict(artist='Me'), bitrate=1800)
-
 # app.py içinde en üstte
 transkript_kilit = threading.Lock()
 
@@ -130,7 +126,6 @@ def transkript():
     finally:
         transkript_kilit.release()
 
-
 # Excel dosyasını alıp işleme kısmı
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -183,47 +178,29 @@ def generate_video():
         if not colors:
             return jsonify({"error": "Renkler eksik."}), 400
 
-        # Video süresi ve limit
-        duration_secs = data.get("duration", 10)
-        duration_secs = max(5, min(duration_secs, 20))
-
-        # Adım başına süreyi hesapla
-        num_periods = len(df.columns)
-        steps_per_period = 30
-        total_frames = num_periods * steps_per_period
-        period_length = int((duration_secs * 1000) / total_frames)
-
         # Video dosya adını oluştur
         video_filename = f"race_{uuid.uuid4().hex}.mp4"
         output_path = os.path.join('downloads', video_filename)
 
         # Video oluşturma işlemi
-        try:
-            bcr.bar_chart_race(
-                df=df,
-                filename=output_path,
-                orientation='h',
-                sort='desc',
-                n_bars=10,
-                fixed_order=False,
-                steps_per_period=steps_per_period,
-                period_length=period_length,
-                figsize=(6, 3.5),
-                bar_kwargs={'color': list(colors.values())} if colors else None
-                writer=writer  # Burada writer'ı belirtin
-            )
-        except Exception as e:
-            print("Video oluşturulurken hata:", str(e))
-            return jsonify({"error": f"Video oluşturulurken bir hata oluştu: {str(e)}"}), 500
+        bcr.bar_chart_race(
+            df=df,
+            filename=output_path,
+            orientation='h',
+            sort='desc',
+            n_bars=10,
+            fixed_order=False,
+            steps_per_period=30,
+            period_length=500,  # Sabit süre, örn. 500ms (ayarlanabilir)
+            figsize=(6, 3.5),
+            bar_kwargs={'color': list(colors.values())} if colors else None
+        )
 
-        # Başarıyla video oluşturulursa, video URL'sini döndür
         return jsonify({"video_url": f"/downloads/{video_filename}"}), 200
 
     except Exception as e:
-        # Genel hata durumu, daha fazla log kaydı ekleyebilirsiniz
         print("Veri işlenirken hata:", str(e))
         return jsonify({"error": f"Veri işlenirken bir hata oluştu: {str(e)}"}), 500
-
 
 # Video gösterim sayfası
 @app.route('/viz_result')
