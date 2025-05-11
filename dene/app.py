@@ -156,13 +156,22 @@ def generate_video():
         return jsonify({"error": "Geçersiz veri."}), 400
 
     try:
-        df = pd.DataFrame(data['tableData'])
-        category_col = df.columns[0]
-        df.set_index(category_col, inplace=True)
-        df = df.apply(pd.to_numeric, errors='coerce')
+        df_raw = pd.DataFrame(data['tableData'])
+
+        # İlk sütun: Zaman (Hafta/Yıl), Geri kalanlar: Kategoriler (FB, GS, BJK)
+        time_col = df_raw.columns[0]
+        categories = df_raw.columns[1:]
+
+        # Transpose etmek için zaman kolonunu indeks yap
+        df_raw[time_col] = df_raw[time_col].astype(str)
+        df_raw.set_index(time_col, inplace=True)
+
+        df = df_raw[categories].apply(pd.to_numeric, errors='coerce')
 
         if df.isnull().values.any():
             return jsonify({"error": "Veri eksik veya geçersiz."}), 400
+
+        df = df.T  # transpose: şimdi satırlar FB, GS, BJK — sütunlar Haftalar
 
         colors = data.get('colors', {})
 
@@ -170,7 +179,6 @@ def generate_video():
         video_filename = f"bar_race_{uuid.uuid4().hex}.mp4"
         output_path = os.path.join('downloads', video_filename)
 
-        # Bar chart animation
         import matplotlib.pyplot as plt
         from matplotlib.animation import FuncAnimation, FFMpegWriter
 
@@ -178,17 +186,14 @@ def generate_video():
 
         def update(frame):
             ax.clear()
-            top = df.iloc[:, frame].sort_values(ascending=True)
-            color_vals = [colors.get(str(cat), "#333333") for cat in top.index]
-            ax.barh(top.index, top.values, color=color_vals)
-            ax.set_title(df.columns[frame])
+            week = df.columns[frame]
+            vals = df[week].sort_values(ascending=True)
+            bar_colors = [colors.get(str(cat), "#333333") for cat in vals.index]
+            ax.barh(vals.index, vals.values, color=bar_colors)
+            ax.set_title(f"Hafta: {week}")
             ax.set_xlim(0, df.max().max())
 
-        anim = FuncAnimation(
-            fig, update, frames=len(df.columns),
-            repeat=False, interval=500
-        )
-
+        anim = FuncAnimation(fig, update, frames=len(df.columns), interval=700, repeat=False)
         writer = FFMpegWriter(fps=2)
         anim.save(output_path, writer=writer)
         plt.close()
@@ -200,7 +205,6 @@ def generate_video():
 
     except Exception as e:
         return jsonify({"error": f"Hata oluştu: {str(e)}"}), 500
-
 
 # Video gösterim sayfası
 @app.route('/viz_result')
