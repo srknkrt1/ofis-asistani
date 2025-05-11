@@ -2,9 +2,7 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 import os, tempfile
 import subprocess
 import pandas as pd
-import bar_chart_race as bcr
 import json
-import matplotlib.animation as animation
 from docx import Document  # eksiktiyse eklenmeli
 from transkript import transkripte_cevir
 from video_tools import indir_video, indir_instagram, indir_twitter,split_audio
@@ -167,44 +165,42 @@ def generate_video():
             return jsonify({"error": "Veri eksik veya geçersiz."}), 400
 
         colors = data.get('colors', {})
-        if not colors:
-            return jsonify({"error": "Renkler eksik."}), 400
 
-        # Klasör varsa oluştur
-        os.makedirs('downloads', exist_ok=True)
-
-        # Sabit ayarlar
-        steps_per_period = 30
-        period_length = 700
-
-        video_filename = f"race_{uuid.uuid4().hex}.mp4"
+        # Output path
+        video_filename = f"bar_race_{uuid.uuid4().hex}.mp4"
         output_path = os.path.join('downloads', video_filename)
 
-        try:
-            bcr.bar_chart_race(
-                df=df,
-                filename=output_path,
-                orientation='h',
-                sort='desc',
-                n_bars=10,
-                fixed_order=False,
-                steps_per_period=steps_per_period,
-                period_length=period_length,
-                figsize=(6, 3.5),
-                bar_kwargs={'color': list(colors.values())}
-            )
-        except Exception as e:
-            print("Video oluşturulurken hata:", str(e))
-            return jsonify({"error": f"Video oluşturulurken bir hata oluştu: {str(e)}"}), 500
+        # Bar chart animation
+        import matplotlib.pyplot as plt
+        from matplotlib.animation import FuncAnimation, FFMpegWriter
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+
+        def update(frame):
+            ax.clear()
+            top = df.iloc[:, frame].sort_values(ascending=True)
+            color_vals = [colors.get(str(cat), "#333333") for cat in top.index]
+            ax.barh(top.index, top.values, color=color_vals)
+            ax.set_title(df.columns[frame])
+            ax.set_xlim(0, df.max().max())
+
+        anim = FuncAnimation(
+            fig, update, frames=len(df.columns),
+            repeat=False, interval=500
+        )
+
+        writer = FFMpegWriter(fps=2)
+        anim.save(output_path, writer=writer)
+        plt.close()
 
         if os.path.exists(output_path):
             return jsonify({"video_url": f"/downloads/{video_filename}"}), 200
         else:
-            return jsonify({"error": "Video dosyası oluşturulamadı."}), 500
+            return jsonify({"error": "Video oluşturulamadı."}), 500
 
     except Exception as e:
-        print("Veri işlenirken hata:", str(e))
-        return jsonify({"error": f"Veri işlenirken bir hata oluştu: {str(e)}"}), 500
+        return jsonify({"error": f"Hata oluştu: {str(e)}"}), 500
+
 
 # Video gösterim sayfası
 @app.route('/viz_result')
