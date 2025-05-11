@@ -291,27 +291,27 @@ document.getElementById("createVideoButton").addEventListener("click", function 
     tableData: tableData,
     colors: colors
   };
-  
   fetch('/generate_video', {
-  method: 'POST',
-  headers: {
-      'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(payload)
-})
-.then(response => response.json())
-.then(result => {
-  console.log("🔍 Sunucudan dönen yanıt:", result);
-  if (result.video_url) {
-    window.location.href = "/viz_result?video_path=" + encodeURIComponent(result.video_url);
-  } else {
-    alert("❌ Video oluşturulurken bir hata oluştu.");
-  }
-})
-.catch(error => {
-  console.error('Hata:', error);
-  alert("❌ Sunucu hatası oluştu.");
-});
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(response => response.json())
+  .then(result => {
+    console.log("🔍 Sunucudan dönen yanıt:", result);
+    if (result.video_url) {
+      window.location.href = "/viz_result?video_path=" + encodeURIComponent(result.video_url);
+    } else {
+      alert("❌ Video oluşturulurken bir hata oluştu.");
+    }
+  })
+  .catch(error => {
+    console.error('Hata:', error);
+    alert("❌ Sunucu hatası oluştu.");
+  });
+
 });
 </script>
 
