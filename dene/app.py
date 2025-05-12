@@ -29,6 +29,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 
 AudioSegment.converter = "/usr/bin/ffmpeg"
+ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
 
 # app.py içinde en üstte
 transkript_kilit = threading.Lock()
@@ -117,6 +118,10 @@ def transkript():
     finally:
         transkript_kilit.release()
 
+# Excel dosyasının uzantısı kontrolü
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/video/create', methods=['POST'])
 def create_video():
     # Excel dosyasını al
@@ -124,9 +129,13 @@ def create_video():
     if not file:
         return "Dosya yüklenmedi", 400
 
+    # Dosya uzantısının kontrolü
+    if not allowed_file(file.filename):
+        return "Geçersiz dosya türü", 400
+
     # Dosyayı kaydet
     filename = secure_filename(file.filename)
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
 
     # Excel dosyasını oku
@@ -152,7 +161,7 @@ def create_video():
 
     # Benzersiz dosya adı
     unique_id = str(uuid.uuid4())[:8]
-    output_path = os.path.join(UPLOAD_FOLDER, f'video_{unique_id}.mp4')
+    output_path = os.path.join(app.config['UPLOAD_FOLDER'], f'video_{unique_id}.mp4')
 
     # Video oluştur
     try:
