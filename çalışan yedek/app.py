@@ -135,6 +135,9 @@ def create_video():
     # İlk sütunu zaman ekseni olarak ayarla
     df.set_index(df.columns[0], inplace=True)
 
+    #Başlık Belirleme
+    title = request.form.get("title", "Yarışan Veriler")  # Eğer başlık girilmemişse varsayılan olarak "Yarışan Veriler Video" olacak
+    
     # Video oluştur
     unique_id = str(uuid.uuid4())[:8]
     output_path = os.path.join(UPLOAD_FOLDER, f'video_{unique_id}.mp4')
@@ -149,7 +152,7 @@ def create_video():
         fixed_max=True,
         steps_per_period=20,
         period_length=500,
-        title='Yarışan Veriler Video',
+        title=title,
         bar_size=.95,
     )
 
