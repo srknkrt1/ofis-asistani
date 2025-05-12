@@ -118,52 +118,68 @@ def transkript():
 
 @app.route('/video/create', methods=['POST'])
 def create_video():
+    # Excel dosyasını al
     file = request.files.get('excel')
     if not file:
         return "Dosya yüklenmedi", 400
 
+    # Dosyayı kaydet
     filename = secure_filename(file.filename)
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
 
     # Excel dosyasını oku
     try:
-        df = pd.read_excel(filepath, engine='openpyxl')  # openpyxl motorunu belirt
+        df = pd.read_excel(filepath, engine='openpyxl')
     except Exception as e:
         return f"Excel okunamadı: {e}", 500
 
+    if df.shape[1] < 2:
+        return "En az iki sütun içeren bir tablo yükleyin.", 400
+
     # İlk sütunu zaman ekseni olarak ayarla
     df.set_index(df.columns[0], inplace=True)
+    df.fillna(0, inplace=True)
 
-    # Video oluştur
+    # Formdan başlık ve renkleri al
+    title = request.form.get("title", "Yarışan Veriler Video")
+    colors = request.form.getlist("colors[]")  # Eğer hiç gönderilmediyse boş liste olur
+
+    # Benzersiz dosya adı
     unique_id = str(uuid.uuid4())[:8]
     output_path = os.path.join(UPLOAD_FOLDER, f'video_{unique_id}.mp4')
 
-    bcr.bar_chart_race(
-        df=df,
-        filename=output_path,
-        orientation='h',
-        sort='desc',
-        n_bars=10,
-        fixed_order=False,
-        fixed_max=True,
-        steps_per_period=20,
-        period_length=500,
-        title='Yarışan Veriler Video',
-        bar_size=.95,
-    )
+    # Video oluştur
+    try:
+        bcr.bar_chart_race(
+            df=df,
+            filename=output_path,
+            orientation='h',
+            sort='desc',
+            n_bars=10,
+            fixed_order=False,
+            fixed_max=True,
+            steps_per_period=20,
+            period_length=500,
+            title=title,
+            bar_size=.95,
+            colors=colors if colors else None  # Renkler geldiyse uygula
+        )
+    except Exception as e:
+        return f"Video oluşturulurken hata: {e}", 500
 
+    # İşlem sonrası dosyaları sil
     @after_this_request
     def remove_files(response):
         try:
             os.remove(filepath)
             os.remove(output_path)
         except Exception as e:
-            print(f"Hata dosya silerken: {e}")
+            print(f"Dosya silinirken hata: {e}")
         return response
 
+    # Videoyu indirilebilir şekilde döndür
     return send_file(output_path, as_attachment=True)
-
 
 @app.route('/pdf/merge', methods=['POST'])
 def merge_pdfs():
