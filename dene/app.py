@@ -142,10 +142,19 @@ def create_video():
     df.set_index(df.columns[0], inplace=True)
     df.fillna(0, inplace=True)
 
-    # Formdan başlık ve renkleri al
+    # Başlık ve renkleri al
     title = request.form.get("title", "Yarışan Veriler Video")
+
+    # Renkleri kontrol et ve gerekirse otomatik tamamla
+    column_count = df.shape[1]
     hex_color_regex = re.compile(r'^#(?:[0-9a-fA-F]{3}){1,2}$')
-    colors = [c.strip() for c in request.form.getlist("colors[]") if c.strip()]
+    colors = [c.strip() for c in request.form.getlist("colors[]") if hex_color_regex.match(c.strip())]
+
+    def random_color():
+        return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+
+    while len(colors) < column_count:
+        colors.append(random_color())
 
     # Benzersiz dosya adı
     unique_id = str(uuid.uuid4())[:8]
@@ -165,7 +174,7 @@ def create_video():
             period_length=500,
             title=title,
             bar_size=.95,
-            colors=colors if colors else None  # Renkler geldiyse uygula
+            colors=colors
         )
     except Exception as e:
         return f"Video oluşturulurken hata: {e}", 500
