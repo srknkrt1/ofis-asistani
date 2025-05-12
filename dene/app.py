@@ -116,70 +116,54 @@ def transkript():
     finally:
         transkript_kilit.release()
 
-@app.route('/video/create', methods=['GET', 'POST'])
+@app.route('/video/create', methods=['POST'])
 def create_video():
-    if request.method == 'POST':
-        file = request.files['excel']
-        if not file:
-            return "Dosya yüklenmedi", 400
+    file = request.files.get('excel')
+    if not file:
+        return "Dosya yüklenmedi", 400
 
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
 
+    # Excel dosyasını oku
+    try:
+        df = pd.read_excel(filepath, engine='openpyxl')  # openpyxl motorunu belirt
+    except Exception as e:
+        return f"Excel okunamadı: {e}", 500
+
+    # İlk sütunu zaman ekseni olarak ayarla
+    df.set_index(df.columns[0], inplace=True)
+
+    # Video oluştur
+    unique_id = str(uuid.uuid4())[:8]
+    output_path = os.path.join(UPLOAD_FOLDER, f'video_{unique_id}.mp4')
+
+    bcr.bar_chart_race(
+        df=df,
+        filename=output_path,
+        orientation='h',
+        sort='desc',
+        n_bars=10,
+        fixed_order=False,
+        fixed_max=True,
+        steps_per_period=20,
+        period_length=500,
+        title='Yarışan Veriler Video',
+        bar_size=.95,
+    )
+
+    @after_this_request
+    def remove_files(response):
         try:
-            df = pd.read_excel(filepath)
-
-            if df.empty or df.shape[1] < 2:
-                return "Excel dosyası boş veya yeterli sütun yok.", 400
-
-            df.set_index(df.columns[0], inplace=True)
-
-            unique_id = str(uuid.uuid4())[:8]
-            output_path = os.path.join(UPLOAD_FOLDER, f'video_{unique_id}.mp4')
-
-            bcr.bar_chart_race(
-                df=df,
-                filename=output_path,
-                orientation='h',
-                sort='desc',
-                n_bars=10,
-                fixed_order=False,
-                fixed_max=True,
-                steps_per_period=20,
-                period_length=500,
-                title='Yarışan Veriler Video',
-                bar_size=.95,
-            )
-
-            @after_this_request
-            def remove_files(response):
-                try:
-                    os.remove(filepath)
-                    os.remove(output_path)
-                except Exception as e:
-                    print(f"Hata dosya silerken: {e}")
-                return response
-
-            return send_file(output_path, as_attachment=True)
-
+            os.remove(filepath)
+            os.remove(output_path)
         except Exception as e:
-            return f"Bir hata oluştu: {str(e)}", 500
+            print(f"Hata dosya silerken: {e}")
+        return response
 
-    # GET isteği durumunda formu göster
-    return '''
-    <!DOCTYPE html>
-    <html lang="tr">
-    <head><meta charset="UTF-8"><title>Video Oluştur</title></head>
-    <body style="font-family: sans-serif; margin: 40px;">
-      <h3>🎬 Excel'den Yarışan Veri Videosu Oluştur</h3>
-      <form action="/video/create" method="post" enctype="multipart/form-data">
-        <input type="file" name="excel" accept=".xlsx, .xls" required><br><br>
-        <button type="submit">Video Oluştur</button>
-      </form>
-    </body>
-    </html>
-    '''
+    return send_file(output_path, as_attachment=True)
+
 
 @app.route('/pdf/merge', methods=['POST'])
 def merge_pdfs():
