@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 import os, tempfile
 import subprocess
 import pandas as pd
+import bar_chart_race as bcr
 from docx import Document  # eksiktiyse eklenmeli
 from transkript import transkripte_cevir
 from video_tools import indir_video, indir_instagram, indir_twitter,split_audio
@@ -21,18 +22,12 @@ from pdf_tools import (
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
 app.config['UPLOAD_FOLDER'] = 'uploads'  # veya senin istediğin başka bir dizin
-app.config['DOWNLOADS_FOLDER'] = 'downloads'
 UPLOAD_FOLDER = 'uploads'
 IMAGE_FOLDER = 'static/temp_images'
-DOWNLOADS_FOLDER = 'downloads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
-os.makedirs(app.config['DOWNLOADS_FOLDER'], exist_ok=True)
 
 AudioSegment.converter = "/usr/bin/ffmpeg"
-
-# ffmpeg path'ini elle ayarlıyoruz
-plt.rcParams['animation.ffmpeg_path'] = '/usr/bin/ffmpeg'
 
 # app.py içinde en üstte
 transkript_kilit = threading.Lock()
@@ -73,11 +68,6 @@ def dmca():
 @app.route('/viz')
 def viz():
     return render_template("viz.html")
-
-@app.route('/downloads/<path:filename>')
-def download_file(filename):
-    return send_from_directory(app.config['DOWNLOADS_FOLDER'], filename)
-
 
 def get_audio_duration(file_path):
     result = subprocess.run(
@@ -126,100 +116,54 @@ def transkript():
     finally:
         transkript_kilit.release()
 
-# Excel dosyasını alıp işleme kısmı
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "Dosya yüklenmedi."}), 400
+@app.route('/video/create', methods=['GET', 'POST'])
+def create_video():
+    if request.method == 'POST':
+        file = request.files['excel']
+        if not file:
+            return "Dosya yüklenmedi", 400
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "Dosya adı boş."}), 400
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
 
-    # Dosyayı kaydediyoruz
-    filename = str(uuid.uuid4()) + ".xlsx"
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_path)
+        # Excel dosyasını oku
+        df = pd.read_excel(filepath)
 
-    try:
-        # Excel dosyasını okuyoruz (tüm hücreleri string olarak)
-        df = pd.read_excel(file_path, dtype=str)
-    except Exception as e:
-        return jsonify({"error": f"Excel okunurken hata oluştu: {str(e)}"}), 500
-
-    return jsonify(df.to_dict(orient='records'))
-
-# Video oluşturma işlemi
-@app.route('/generate_video', methods=['POST'])
-def generate_video():
-    print("FFmpeg erişim testi başlatılıyor...")
-    result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
-    print("FFmpeg çıktısı:")
-    print(result.stdout)
-    print("FFmpeg hata çıktısı:")
-    print(result.stderr)
-    import bar_chart_race as bcr
-
-    data = request.json
-
-    if not data or 'tableData' not in data or 'colors' not in data:
-        return jsonify({"error": "Geçersiz veri."}), 400
-
-    try:
-        df_raw = pd.DataFrame(data['tableData'])
-
-        # İlk sütun zaman (ör: Hafta), diğerleri yarışanlar (ör: FB, GS, BJK)
-        time_col = df_raw.columns[0]
-        categories = df_raw.columns[1:]
-
-        df_raw[time_col] = df_raw[time_col].astype(str)
-        df_raw.set_index(time_col, inplace=True)
-
-        df = df_raw[categories].apply(pd.to_numeric, errors='coerce')
-
-        # Transpose: satırlar zaman, sütunlar yarışanlar olacak şekilde döndür
-        df = df.T
-        df = df.T  # bar_chart_race zaten bu şekilde istiyor (index: zaman)
-
-        colors = data.get('colors', {})
-        bar_colors = [colors.get(col, "#333333") for col in df.columns]
-
-        # Benzersiz dosya adı oluştur
-        video_filename = f"bar_race_{uuid.uuid4().hex}.mp4"
-        output_path = os.path.join('downloads', video_filename)
+        # İlk sütunu zaman ekseni olarak ayarla
+        df.set_index(df.columns[0], inplace=True)
 
         # Video oluştur
+        output_path = os.path.join(UPLOAD_FOLDER, 'video.mp4')
         bcr.bar_chart_race(
-        df=your_dataframe,
-        filename='static/exports/output.mp4',
-        orientation='h',
-        sort='desc',
-        n_bars=5,
-        fixed_order=False,
-        fixed_max=True,
-        steps_per_period=10,
-        period_length=500,
-        interpolate_period=False,
-        title='Puan Yarışı',
-        bar_size=.95,
-        cmap='dark12',
-        filter_column_colors=True,
-        scale='linear',
-)
+            df=df,
+            filename=output_path,
+            orientation='h',
+            sort='desc',
+            n_bars=10,
+            fixed_order=False,
+            fixed_max=True,
+            steps_per_period=20,
+            period_length=500,
+            title='Yarışan Veriler Video',
+            bar_size=.95,
+        )
 
-        if os.path.exists(output_path):
-            return jsonify({"video_url": f"/downloads/{video_filename}"}), 200
-        else:
-            return jsonify({"error": "Video oluşturulamadı."}), 500
+        return send_file(output_path, as_attachment=True)
 
-    except Exception as e:
-        return jsonify({"error": f"Hata oluştu: {str(e)}"}), 500
-
-# Video gösterim sayfası
-@app.route('/viz_result')
-def viz_result():
-    video_path = request.args.get('video_path')
-    return render_template('viz_result.html', video_path=video_path)
+    return '''
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head><meta charset="UTF-8"><title>Video Oluştur</title></head>
+    <body style="font-family: sans-serif; margin: 40px;">
+      <h3>🎬 Excel'den Yarışan Veri Videosu Oluştur</h3>
+      <form action="/video/create" method="post" enctype="multipart/form-data">
+        <input type="file" name="excel" accept=".xlsx, .xls" required><br><br>
+        <button type="submit">Video Oluştur</button>
+      </form>
+    </body>
+    </html>
+    '''
 
 @app.route('/pdf/merge', methods=['POST'])
 def merge_pdfs():
