@@ -76,15 +76,30 @@
     </li>
   </ul>
 
+  <!-- Ek Form Alanları -->
+<div class="container mt-3">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label for="videoTitle" class="form-label">🎬 Video Başlığı:</label>
+      <input type="text" class="form-control" id="videoTitle" placeholder="Örn: 2024 Nüfus Artışı">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">🎨 Renk Seçimi:</label>
+      <div id="colorInputs" class="d-flex flex-wrap gap-2"></div>
+    </div>
+  </div>
+</div>
+  
   <div class="tab-pane fade show active" id="racing" role="tabpanel">
     <h4>🏁 Yarışan Veriler (Racing Bar Chart)</h4>
     <p>Excel dosyanızı yükleyerek verilerinizi görüntüleyin ve düzenleyin.</p>
-
+  
     <!-- Excel Yükleme Formu -->
     <div class="mb-3">
       <input class="form-control" type="file" id="excelFile" accept=".xlsx, .xls">
     </div>
 
+    
     <!-- Tabloyu Göster -->
     <div id="excelTableContainer" class="table-responsive mt-4">
       <table id="excelTable" class="table table-bordered table-striped"></table>
@@ -124,7 +139,6 @@
     const file = e.target.files[0];
     if (!file) return;
 
-    // Aynı dosyayı gizli input'a da aktar
     document.getElementById('videoExcelFile').files = e.target.files;
 
     const reader = new FileReader();
@@ -137,6 +151,7 @@
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       renderTable(jsonData);
+      generateColorPickers(jsonData[0].slice(1)); // İlk satırdaki başlıklar dışındaki sütunlar
     };
     reader.readAsArrayBuffer(file);
   });
@@ -157,6 +172,19 @@
     });
   }
 
+  function generateColorPickers(labels) {
+    const container = document.getElementById('colorInputs');
+    container.innerHTML = '';
+    labels.forEach((label, idx) => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <label style="font-size: 14px;">${label}</label><br>
+        <input type="color" name="colors[]" value="#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}">
+      `;
+      container.appendChild(div);
+    });
+  }
+
   document.getElementById('videoButton').addEventListener('click', function(e) {
     const fileInput = document.getElementById('videoExcelFile');
     const file = fileInput.files[0];
@@ -167,6 +195,14 @@
 
     const formData = new FormData();
     formData.append('excel', file);
+
+    const title = document.getElementById('videoTitle').value || "Yarışan Veriler Video";
+    formData.append('title', title);
+
+    const colorInputs = document.querySelectorAll('#colorInputs input[type="color"]');
+    colorInputs.forEach(input => {
+      formData.append('colors[]', input.value);
+    });
 
     fetch('/video/create', {
       method: 'POST',
