@@ -144,17 +144,11 @@ def create_video():
 
     # Başlık ve renkleri al
     title = request.form.get("title", "Yarışan Veriler Video")
+    colors = request.form.getlist("colors[]")
 
-    # Renkleri kontrol et ve gerekirse otomatik tamamla
-    column_count = df.shape[1]
-    hex_color_regex = re.compile(r'^#(?:[0-9a-fA-F]{3}){1,2}$')
-    colors = [c.strip() for c in request.form.getlist("colors[]") if hex_color_regex.match(c.strip())]
-
-    def random_color():
-        return "#{:06x}".format(random.randint(0, 0xFFFFFF))
-
-    while len(colors) < column_count:
-        colors.append(random_color())
+    # Gelen renk sayısı sütun sayısıyla uyuşmazsa hata ver
+    if len(colors) != df.shape[1]:
+        return f"{df.shape[1]} sütun için {df.shape[1]} renk seçmelisiniz.", 400
 
     # Benzersiz dosya adı
     unique_id = str(uuid.uuid4())[:8]
@@ -189,7 +183,6 @@ def create_video():
             print(f"Dosya silinirken hata: {e}")
         return response
 
-    # Videoyu indirilebilir şekilde döndür
     return send_file(output_path, as_attachment=True)
 
 @app.route('/pdf/merge', methods=['POST'])
