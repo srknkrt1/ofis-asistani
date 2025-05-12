@@ -80,6 +80,12 @@
     <h4>🏁 Yarışan Veriler (Racing Bar Chart)</h4>
     <p>Excel dosyanızı yükleyerek verilerinizi görüntüleyin ve düzenleyin.</p>
 
+    <!-- Başlık Girişi -->
+    <div class="mb-3">
+      <label for="videoTitle" class="form-label">Video Başlığı</label>
+      <input type="text" class="form-control" id="videoTitle" placeholder="Başlık girin" />
+    </div>
+
     <!-- Excel Yükleme Formu -->
     <div class="mb-3">
       <input class="form-control" type="file" id="excelFile" accept=".xlsx, .xls">
@@ -160,13 +166,21 @@
   document.getElementById('videoButton').addEventListener('click', function(e) {
     const fileInput = document.getElementById('videoExcelFile');
     const file = fileInput.files[0];
+    const videoTitle = document.getElementById('videoTitle').value.trim();
+    
     if (!file) {
       alert("Lütfen önce bir Excel dosyası yükleyin.");
       return;
     }
 
+    if (!videoTitle) {
+      alert("Lütfen bir video başlığı girin.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append('excel', file);
+    formData.append('title', videoTitle);  // Başlık bilgisini form verisine ekle
 
     fetch('/video/create', {
       method: 'POST',
