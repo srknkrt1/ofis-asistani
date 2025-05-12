@@ -127,30 +127,46 @@ def create_video():
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # Excel dosyasını oku
-        df = pd.read_excel(filepath)
+        try:
+            df = pd.read_excel(filepath)
 
-        # İlk sütunu zaman ekseni olarak ayarla
-        df.set_index(df.columns[0], inplace=True)
+            if df.empty or df.shape[1] < 2:
+                return "Excel dosyası boş veya yeterli sütun yok.", 400
 
-        # Video oluştur
-        output_path = os.path.join(UPLOAD_FOLDER, 'video.mp4')
-        bcr.bar_chart_race(
-            df=df,
-            filename=output_path,
-            orientation='h',
-            sort='desc',
-            n_bars=10,
-            fixed_order=False,
-            fixed_max=True,
-            steps_per_period=20,
-            period_length=500,
-            title='Yarışan Veriler Video',
-            bar_size=.95,
-        )
+            df.set_index(df.columns[0], inplace=True)
 
-        return send_file(output_path, as_attachment=True)
+            unique_id = str(uuid.uuid4())[:8]
+            output_path = os.path.join(UPLOAD_FOLDER, f'video_{unique_id}.mp4')
 
+            bcr.bar_chart_race(
+                df=df,
+                filename=output_path,
+                orientation='h',
+                sort='desc',
+                n_bars=10,
+                fixed_order=False,
+                fixed_max=True,
+                steps_per_period=20,
+                period_length=500,
+                title='Yarışan Veriler Video',
+                bar_size=.95,
+            )
+
+            @after_this_request
+            def remove_files(response):
+                try:
+                    os.remove(filepath)
+                    os.remove(output_path)
+                except Exception as e:
+                    print(f"Hata dosya silerken: {e}")
+                return response
+
+            return send_file(output_path, as_attachment=True)
+
+        except Exception as e:
+            return f"Bir hata oluştu: {str(e)}", 500
+
+    # GET isteği durumunda formu göster
     return '''
     <!DOCTYPE html>
     <html lang="tr">
