@@ -2,10 +2,6 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 import os, tempfile
 import subprocess
 import pandas as pd
-import json
-import bar_chart_race as bcr
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from docx import Document  # eksiktiyse eklenmeli
 from transkript import transkripte_cevir
 from video_tools import indir_video, indir_instagram, indir_twitter,split_audio
