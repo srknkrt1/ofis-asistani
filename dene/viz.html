@@ -41,18 +41,19 @@
       text-align: center;
       margin-top: 40px;
     }
-    .button-group a {
+    .button-group a, .button-group button {
       display: inline-block;
       padding: 15px 30px;
       background-color: #3498db;
       color: white;
-      text-decoration: none;
       font-size: 16px;
       border-radius: 12px;
       margin: 10px;
+      border: none;
+      text-decoration: none;
       transition: background-color 0.3s ease;
     }
-    .button-group a:hover {
+    .button-group a:hover, .button-group button:hover {
       background-color: #2980b9;
     }
   </style>
@@ -73,7 +74,6 @@
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="animated-tab" data-bs-toggle="tab" data-bs-target="#animated" type="button" role="tab">🎞️ Hareketli Grafikler</button>
     </li>
-    <!-- Daha fazla sekme eklenebilir -->
   </ul>
 
   <div class="tab-pane fade show active" id="racing" role="tabpanel">
@@ -89,23 +89,25 @@
     <div id="excelTableContainer" class="table-responsive mt-4">
       <table id="excelTable" class="table table-bordered table-striped"></table>
     </div>
- </div>
+  </div>
 
-
-    <div class="tab-pane fade" id="animated" role="tabpanel">
-      <h4>🎞️ Hareketli Grafikler</h4>
-      <p>Verilerinizin animasyonlu bir şekilde sunumu için bu bölümü kullanabilirsiniz.</p>
-      <!-- İçerik buraya gelecek -->
-      <div class="text-center mt-3">
-        <button class="btn btn-primary">Grafik Oluştur</button>
-      </div>
+  <div class="tab-pane fade" id="animated" role="tabpanel">
+    <h4>🎞️ Hareketli Grafikler</h4>
+    <p>Verilerinizin animasyonlu bir şekilde sunumu için bu bölümü kullanabilirsiniz.</p>
+    <div class="text-center mt-3">
+      <button class="btn btn-primary">Grafik Oluştur</button>
     </div>
   </div>
 
   <div class="button-group">
-    <a href="/video/create" style="background-color: #2c3e50;">🎬 Video Oluştur</a>
+    <button id="videoButton" style="background-color: #2c3e50;">🎬 Video Oluştur</button>
     <a href="/">Ana Sayfa</a>
   </div>
+
+  <!-- Gizli form sadece JS için -->
+  <form id="videoForm" style="display: none;">
+    <input type="file" id="videoExcelFile" name="excel">
+  </form>
 </div>
 
 <div class="footer-links">
@@ -121,6 +123,9 @@
   document.getElementById('excelFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Aynı dosyayı gizli input'a da aktar
+    document.getElementById('videoExcelFile').files = e.target.files;
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -144,13 +149,46 @@
       const tr = document.createElement('tr');
       row.forEach(cell => {
         const td = document.createElement(rowIndex === 0 ? 'th' : 'td');
-        td.contentEditable = rowIndex !== 0;  // başlıklar düzenlenemesin
+        td.contentEditable = rowIndex !== 0;
         td.textContent = cell !== undefined ? cell : '';
         tr.appendChild(td);
       });
       table.appendChild(tr);
     });
   }
+
+  document.getElementById('videoButton').addEventListener('click', function(e) {
+    const fileInput = document.getElementById('videoExcelFile');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Lütfen önce bir Excel dosyası yükleyin.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('excel', file);
+
+    fetch('/video/create', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Video oluşturulamadı.");
+      return response.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'yarisan_veriler_video.mp4';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    })
+    .catch(error => {
+      alert("Bir hata oluştu: " + error.message);
+    });
+  });
 </script>
 </body>
 </html>
