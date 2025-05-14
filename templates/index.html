@@ -10,24 +10,36 @@
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
+      height: 100%;
       margin: 0;
+      padding: 0;
+    }
+
+    body {
       font-family: "Segoe UI", sans-serif;
       background: #f4f7fa;
       color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    main {
+      flex: 1;
     }
 
     header {
       background: #2c3e50;
       color: white;
-      padding: 20px 0; /* Header büyüdüğünde padding artar */
+      padding: 20px 0;
       text-align: center;
     }
 
     .logo {
-      height: 110px; /* Logo boyutu 110px */
-      margin-top: 20px; /* Üst boşluk */
-      margin-bottom: 20px; /* Alt boşluk */
+      height: 110px;
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
 
     h1 {
@@ -76,7 +88,7 @@
       border-radius: 10px;
       padding: 20px;
       flex: 1 1 300px;
-      max-width: 450px; /* Genişlik arttırıldı */
+      max-width: 450px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       text-align: center;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -132,7 +144,7 @@
       }
 
       .feature-box {
-        max-width: 90%; /* Küçük ekranlarda daha geniş kutular */
+        max-width: 90%;
       }
     }
   </style>
@@ -143,37 +155,38 @@
     <img src="/static/images/logo.png" alt="Logo" class="logo">
   </header>
 
-  <h1>Online PDF ve Medya Araçları</h1>
+  <main>
+    <h1>Online PDF ve Medya Araçları</h1>
 
-  <div class="container">
-    <div class="button-group">
-      <a href="/pdf" class="button">📄 PDF İşlemleri</a>
-      <a href="/video" class="button">🎬 Video İndirme</a>
-      <a href="/transkript" class="button">📝 Transkript</a>
-      <a href="/viz" class="button">📊 Veri Görselleştirme</a>
+    <div class="container">
+      <div class="button-group">
+        <a href="/pdf" class="button">📄 PDF İşlemleri</a>
+        <a href="/video" class="button">🎬 Video İndirme</a>
+        <a href="/transkript" class="button">📝 Transkript</a>
+        <a href="/viz" class="button">📊 Veri Görselleştirme</a>
+      </div>
+
+      <div class="features">
+        <div class="feature-box">
+          <img src="/static/images/pdficon.svg" alt="PDF Icon" width="60" height="60">
+          <h2>PDF Dosyalarını Düzenleyin</h2>
+          <p>DijitalHamal ile PDF dosyalarınızı kolayca düzenleyebilirsiniz...</p>
+        </div>
+
+        <div class="feature-box">
+          <img src="/static/images/videoicon.svg" alt="Video Icon" width="60" height="60">
+          <h2>Videoları İndirin</h2>
+          <p>Instagram, X (Twitter) ve YouTube platformlarındaki videoları cihazınıza kolayca indirebilirsiniz...</p>
+        </div>
+
+        <div class="feature-box">
+          <img src="/static/images/transcripticon.svg" alt="Transcript Icon" width="60" height="60">
+          <h2>Ses Dosyalarını Yazıya Çevirin</h2>
+          <p>Toplantı kayıtları, podcast bölümleri veya kişisel notlar gibi ses dosyalarınızı kısa sürede yazıya dökün...</p>
+        </div>
+      </div>
     </div>
-
-    <div class="features">
-      <div class="feature-box">
-        <img src="/static/images/pdficon.svg" alt="PDF Icon" width="60" height="60">
-
-        <h2>PDF Dosyalarını Düzenleyin</h2>
-        <p>DijitalHamal ile PDF dosyalarınızı kolayca düzenleyebilirsiniz. Dosyaları birleştirme, sayfaları bölme, sıralama ve boyut küçültme gibi işlemler yalnızca birkaç tıklamayla tamamlanır. Ayrıca PDF'den Word, JPG gibi farklı formatlara dönüştürme seçenekleriyle belgelerinizi dilediğiniz gibi şekillendirin. Ücretsiz, hızlı ve indirimsiz çözümlerle zaman kazanın.</p>
-      </div>
-
-      <div class="feature-box">
-        <img src="/static/images/videoicon.svg" alt="Video Icon" width="60" height="60">
-        <h2>Videoları İndirin</h2>
-        <p>Instagram, X (Twitter) ve YouTube platformlarındaki videoları cihazınıza kolayca indirebilirsiniz. Linki yapıştırın ve indir tuşuna tıklayın. Herhangi bir yazılım yüklemeden, HD çözünürlükte videoları hızlıca indirin. Kendi arşivinizi oluşturmak artık çok daha pratik.</p>
-      </div>
-
-      <div class="feature-box">
-        <img src="/static/images/transcripticon.svg" alt="Transcript Icon" width="60" height="60">
-        <h2>Ses Dosyalarını Yazıya Çevirin</h2>
-        <p>Toplantı kayıtları, podcast bölümleri veya kişisel notlar gibi ses dosyalarınızı kısa sürede yazıya dökün. Otomatik konuşma tanıma teknolojisi sayesinde uzun ses kayıtlarını dakikalar içinde okunabilir metne çevirin. Eğitim, iş veya içerik üretimi gibi alanlarda kolaylık sağlayan bu araç tamamen ücretsizdir ve hiçbir teknik bilgi gerektirmez.</p>
-      </div>
-    </div>
-  </div>
+  </main>
 
   <footer>
     Bu uygulama <strong>geliştirme</strong> aşamasındadır.
