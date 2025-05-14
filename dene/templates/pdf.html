@@ -97,6 +97,7 @@
         <input class="form-control" type="number" name="start" placeholder="Başlangıç Sayfa" required>
         <input class="form-control" type="number" name="end" placeholder="Bitiş Sayfa" required>
         <button class="btn btn-primary" type="submit">PDF Böl</button>
+        <p class="text-muted small mt-2">Belirlediğiniz sayfa aralıklarına göre PDF dosyanızı hızlıca bölebilirsiniz.</p>
       </form>
     </div>
 
@@ -107,6 +108,7 @@
         <ul id="file-list" class="list-group mb-3"></ul>
         <div id="order-inputs"></div>
         <button class="btn btn-primary" type="submit">PDF'leri Birleştir</button>
+        <p class="text-muted small mt-2">Birden fazla PDF dosyasını istediğiniz gibi sıralayarak tek bir belge hâline getirin.</p>
       </form>
     </div>
 
@@ -118,6 +120,7 @@
         <input type="hidden" name="angle" id="angle" value="90">
         <button class="btn btn-secondary mb-2" type="button" onclick="increaseAngle()">⟳ Açı: <span id="angle-display">90°</span></button>
         <button class="btn btn-primary" type="submit">Döndür</button>
+        <p class="text-muted small mt-2">PDF içindeki sayfaları veya PDF dosyanızın tamamını dikey veya yatay olarak döndürebilirsiniz. Tüm dosyayı döndürmek istiyorsanız başlangıç ve bitiş sayfalarını yazmalısnız.</p>
       </form>
     </div>
 
@@ -132,6 +135,7 @@
           <option value="yüksek">Yüksek</option>
         </select>
         <button class="btn btn-primary" type="submit">Sıkıştır</button>
+        <p class="text-muted small mt-2">PDF dosyanızın boyutunu kalite seçeneğine göre azaltarak daha hızlı paylaşabilirsiniz.</p>
       </form>
     </div>
 
@@ -140,6 +144,7 @@
       <form action="/pdf/pdf2word" method="post" enctype="multipart/form-data">
         <input class="form-control" type="file" name="pdf" required>
         <button class="btn btn-primary" type="submit">Dönüştür</button>
+        <p class="text-muted small mt-2">PDF dosyanızı düzenlenebilir Word (.docx) belgesine dönüştürün. Taranmış/imzalanmış dosyalar için ayrıca OCR bölümü eklenecektir. </p>
       </form>
     </div>
   </div>
