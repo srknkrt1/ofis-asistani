@@ -3,40 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <title>Hakkımızda - DijitalHamal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
       background: #f4f7fa;
-      margin: 0;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      margin: 0;
     }
 
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 30px 0;
-      font-size: 28px;
-      font-weight: bold;
-      text-align: center;
+    .navbar {
+      padding-top: 20px;
+      padding-bottom: 20px;
+      background-color: #2c3e50;
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+      color: white !important;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
 
     .content {
       max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
+      text-align: center;
       color: #333;
-      line-height: 1.6;
+      line-height: 1.8;
+    }
+
+    .content p {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
     }
 
     .button-group {
-      text-align: center;
-      margin-top: 40px;
+      margin-top: 30px;
     }
 
-    .button {
+    .button-group a {
       display: inline-block;
       padding: 15px 30px;
       background-color: #3498db;
@@ -44,20 +59,18 @@
       text-decoration: none;
       font-size: 16px;
       border-radius: 12px;
-      margin: 10px;
       transition: background-color 0.3s ease;
     }
 
-    .button:hover {
+    .button-group a:hover {
       background-color: #2980b9;
     }
 
     .footer-links {
       background-color: #e0e0e0;
-      padding: 15px 0;
+      padding: 25px 0;
       text-align: center;
-      font-size: 14px;
-      margin-top: auto;
+      font-size: 16px;
     }
 
     .footer-links a {
@@ -73,18 +86,27 @@
 </head>
 <body>
 
-  <header>Hakkımızda</header>
+  <!-- HEADER -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid justify-content-center">
+      <span class="navbar-brand mb-0 h1">📌 Hakkımızda</span>
+    </div>
+  </nav>
 
-  <div class="content">
-    <p><strong>DijitalHamal</strong>, ofis çalışanlarının ve öğrencilerin günlük dijital ihtiyaçlarını hızlıca çözebilmesi için geliştirilmiş, kullanıcı dostu bir çevrimiçi araç platformudur.</p>
-    <p>Amacımız, herhangi bir yazılım kurulumuna ihtiyaç duymadan PDF işlemleri, video indirme ve ses transkripsiyonu gibi işleri tek bir çatı altında sunmaktır. Kullanıcılar hiçbir teknik bilgiye ihtiyaç duymadan işlemlerini saniyeler içinde tamamlayabilir.</p>
-    <p>Gelecekte platforma yeni özellikler ekleyerek ofis ortamında ihtiyaç duyulabilecek tüm dijital çözümleri bir araya getirmeyi hedefliyoruz.</p>
+  <!-- MAIN CONTENT ORTALANMIŞ -->
+  <div class="main-content">
+    <div class="content">
+      <p><strong>DijitalHamal</strong>, ofis çalışanlarının ve öğrencilerin günlük dijital ihtiyaçlarını hızlıca çözebilmesi için geliştirilmiş, kullanıcı dostu bir çevrimiçi araç platformudur.</p>
+      <p>Amacımız, herhangi bir yazılım kurulumuna ihtiyaç duymadan PDF işlemleri, video indirme ve ses transkripsiyonu gibi işleri tek bir çatı altında sunmaktır. Kullanıcılar hiçbir teknik bilgiye ihtiyaç duymadan işlemlerini saniyeler içinde tamamlayabilir.</p>
+      <p>Gelecekte platforma yeni özellikler ekleyerek ofis ortamında ihtiyaç duyulabilecek tüm dijital çözümleri bir araya getirmeyi hedefliyoruz.</p>
 
-    <div class="button-group">
-      <a href="/" class="button">Ana Sayfa</a>
+      <div class="button-group">
+        <a href="/">Ana Sayfa</a>
+      </div>
     </div>
   </div>
 
+  <!-- FOOTER -->
   <div class="footer-links">
     <a href="/hakkimizda">Hakkımızda</a>
     <a href="/iletisim">İletişim</a>
