@@ -107,6 +107,17 @@
       text-decoration: underline;
       color: #000;
     }
+    .alert-info {
+      background-color: #eef6fb;
+      color: #2c3e50;
+    }
+    .alert-info h5 {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .alert-info p {
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -134,6 +145,7 @@
         <form method="post" action="/video/instagram">
           <input class="form-control" type="text" name="url" placeholder="Instagram video URL'si" required>
           <button class="btn btn-danger" type="submit">İndir</button>
+          <p class="form-info text-muted mt-3 fst-italic larger-text" style="text-align: center;">Instagram videolarının bağlantı adresini yukarıya yapıştırarak içerikleri hızlıca indirebilirsiniz.</p>
         </form>
       </div>
 
@@ -142,6 +154,7 @@
         <form method="post" action="/video/twitter">
           <input class="form-control" type="text" name="url" placeholder="X (Twitter) video URL'si" required>
           <button class="btn btn-info" type="submit">İndir</button>
+          <p class="form-info text-muted mt-3 fst-italic larger-text" style="text-align: center;">X (Twitter) videolarını indirmek için paylaşım bağlantısını yukarıya yapıştırmanız yeterlidir.</p>
         </form>
       </div>
 
@@ -155,14 +168,29 @@
             <option value="playlist">Oynatma Listesi</option>
           </select>
           <button class="btn btn-primary" type="submit">İndir</button>
+          <p class="form-info text-muted mt-3 fst-italic larger-text" style="text-align: center;">YouTube videolarını, ses dosyalarını veya oynatma listelerini buradan kolayca indirebilirsiniz.<br> 
+          Çerez politikalarındaki değişiklikler nedeniyle indirme aracında geçici kesintiler yaşanabilir.</p>
         </form>
       </div>
     </div>
 
-    <div class="text-center info">
-      Bu özellik deneme sürecindedir. Geri bildirimlerinizi bekliyoruz.
-    </div>
+    
 
+    <div class="mt-4">
+      <div class="alert alert-info border-0 shadow-sm rounded-4 p-4">
+        <h5 class="mb-2 text-center">📥 Güvenli ve Kolay Video İndirme Deneyimi</h5>
+        <p class="form-info text-muted mt-3 mb-2 text-center larger-text">
+          DijitalHamal ile Instagram, X (Twitter) ve YouTube videolarını kolayca indirebilirsiniz.<br>
+          <strong>İndirilen hiçbir içerik sunucuda saklanmaz</strong> ve işlem sonrası sistemden silinir.<br>
+          YouTube'da nadiren erişim sorunları yaşanabilir; <strong>çerezler güncellendikçe sistem otomatik adapte olur</strong>.
+        </p>
+      </div>
+    </div>
+    
+    <div class="text-center info">
+      Bu özellik deneme sürecindedir.
+    </div>
+    
     <div class="button-group">
       <a href="/">🏠 Ana Sayfa</a>
     </div>
