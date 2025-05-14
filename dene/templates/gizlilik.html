@@ -3,68 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <title>Gizlilik Politikası - DijitalHamal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
       background: #f4f7fa;
-      margin: 0;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      margin: 0;
     }
 
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 30px 0;
-      font-size: 28px;
-      font-weight: bold;
-      text-align: center;
+    .navbar {
+      padding-top: 20px;
+      padding-bottom: 20px;
+      background-color: #2c3e50;
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+      color: white !important;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
 
     .content {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
+      max-width: 700px;
+      width: 100%;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
       color: #333;
-      line-height: 1.6;
     }
 
     .content p {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
       margin-bottom: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.03);
+      line-height: 1.6;
     }
 
     .button-group {
       text-align: center;
-      margin: 40px 0 20px;
+      margin-top: 30px;
     }
 
-    .button {
+    .button-group a {
       display: inline-block;
-      padding: 15px 30px;
+      padding: 12px 25px;
       background-color: #3498db;
       color: white;
       text-decoration: none;
-      font-size: 16px;
-      border-radius: 12px;
+      font-size: 1rem;
+      border-radius: 10px;
       transition: background-color 0.3s ease;
     }
 
-    .button:hover {
+    .button-group a:hover {
       background-color: #2980b9;
     }
 
     .footer-links {
       background-color: #e0e0e0;
-      padding: 15px 0;
+      padding: 25px 0;
       text-align: center;
-      font-size: 14px;
-      margin-top: auto;
+      font-size: 16px;
     }
 
     .footer-links a {
@@ -80,19 +90,28 @@
 </head>
 <body>
 
-  <header>Gizlilik Politikası</header>
+  <!-- HEADER -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid justify-content-center">
+      <span class="navbar-brand mb-0 h1">🔒 Gizlilik Politikası</span>
+    </div>
+  </nav>
 
-  <div class="content">
-    <p><strong>DijitalHamal</strong>, kullanıcılarının gizliliğine önem verir. Site üzerinde gerçekleştirilen işlemler sırasında kullanıcıdan kişisel veri toplanmaz.</p>
-    <p>Sitemiz yalnızca gerekli olduğunda tarayıcınızda çerez (cookie) kullanabilir. Bu çerezler yalnızca kullanıcı deneyimini geliştirmek amacıyla kullanılır.</p>
-    <p>Yüklenen dosyalar hiçbir şekilde sistemde kalıcı olarak saklanmaz. Tüm işlemler geçicidir ve işlem tamamlandığında ilgili dosyalar otomatik olarak silinir.</p>
-    <p>Herhangi bir reklam veya üçüncü parti servis ile veri paylaşımı yapılmaz.</p>
+  <!-- ORTALANMIŞ İÇERİK -->
+  <div class="main-content">
+    <div class="content">
+      <p><strong>DijitalHamal</strong>, kullanıcılarının gizliliğine önem verir. Site üzerinde gerçekleştirilen işlemler sırasında kullanıcıdan kişisel veri toplanmaz.</p>
+      <p>Sitemiz yalnızca gerekli olduğunda tarayıcınızda çerez (cookie) kullanabilir. Bu çerezler yalnızca kullanıcı deneyimini geliştirmek amacıyla kullanılır.</p>
+      <p>Yüklenen dosyalar hiçbir şekilde sistemde kalıcı olarak saklanmaz. Tüm işlemler geçicidir ve işlem tamamlandığında ilgili dosyalar otomatik olarak silinir.</p>
+      <p>Herhangi bir reklam veya üçüncü parti servis ile veri paylaşımı yapılmaz.</p>
 
-    <div class="button-group">
-      <a href="/" class="button">Ana Sayfa</a>
+      <div class="button-group">
+        <a href="/">Ana Sayfa</a>
+      </div>
     </div>
   </div>
 
+  <!-- FOOTER -->
   <div class="footer-links">
     <a href="/hakkimizda">Hakkımızda</a>
     <a href="/iletisim">İletişim</a>
@@ -103,4 +122,3 @@
 
 </body>
 </html>
-
