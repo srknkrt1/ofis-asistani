@@ -336,6 +336,8 @@ def youtube_download():
     secenek = request.form.get("secenek", "video")
     dosya_yolu = indir_video(url, secenek)
 
+    print(f"İndirilen dosya yolu: {dosya_yolu}")  # ← debug için
+
     if dosya_yolu and os.path.exists(dosya_yolu):
         @after_this_request
         def temizle(response):
@@ -348,7 +350,6 @@ def youtube_download():
         return send_file(dosya_yolu, as_attachment=True)
     else:
         return "İndirme sırasında bir hata oluştu.", 500
-
 
 @app.route("/video/instagram", methods=["POST"])
 def instagram_download():
