@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>DijitalHamal | Ses Dosyasını Metne Çevir - Transkript</title>
+  <link rel="canonical" href="{{ request.url }}" />
+  <meta name="description" content="Ses dosyalarınızı metne dönüştürün. Otomatik transkript aracıyla pratik ve güvenli metin çıkarımı yapın.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/static/images/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg" />
+  <link rel="shortcut icon" href="/static/images/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png" />
+  <link rel="manifest" href="/static/images/site.webmanifest" />
+  <style>
+    body {
+      background: #f4f7fa;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .navbar {
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+    .navbar-brand {
+      font-size: 2rem;
+    }
+    .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+
+    .btn-custom {
+      padding: 12px 24px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .btn-custom:hover {
+      background-color: #2980b9;
+    }
+    .footer-links {
+      background-color: #e0e0e0;
+      padding: 25px 0;
+      text-align: center;
+      font-size: 16px;
+      margin-top: auto;
+    }
+    .footer-links {
+      background-color: #e0e0e0;
+      padding: 25px 0;
+      text-align: center;
+      font-size: 16px;
+      margin-top: auto;
+    }
+    .footer-links a {
+      margin: 0 15px;
+      color: #333;
+      text-decoration: none;
+    }
+
+    #loading {
+      display: none;
+      margin-top: 20px;
+      color: #2980b9;
+    }
+
+    .back-button {
+      margin-top: 40px;
+      margin-bottom: 20px; /* 🔧 Footer ile arasında boşluk */
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg" style="background-color: #2c3e50;">
+    <div class="container-fluid justify-content-center">
+      <span class="navbar-brand mb-0 h1 text-white">📝 Transkript</span>
+    </div>
+  </nav>
+
+  <div class="container d-flex flex-column align-items-center">
+
+    <!-- Transkript Formu -->
+    <form id="transkript-form" method="post" action="/transkript" enctype="multipart/form-data" class="form-container col-md-6">
+      <h4 class="text-center mb-4">Ses Dosyasını Metne Çevir</h4>
+
+      <div class="mb-3">
+        <input type="file" name="audio" accept=".mp3,.wav,.m4a" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-custom w-100">Transkripti Oluştur</button>
+
+      <div id="loading" class="text-center">⏳ Transkript oluşturuluyor, lütfen bekleyiniz...</div>
+
+      {% if hata %}
+        <div class="text-danger text-center mt-3">{{ hata }}</div>
+      {% endif %}
+
+      <div class="text-center mt-4 text-muted small">
+        Bu özellik deneme aşamasındadır. Şu anda yalnızca 10 dakikadan kısa ses dosyaları desteklenmektedir.
+        Bir ses dosyasının transkripti yaklaşık 3–4 dakika sürmektedir.
+        Bu işlem sırasında tarayıcıyı açık tutmanız gerekmektedir.
+        Daha iyi sonuçlar için sesin net ve yeterli seviyede olmasına dikkat ediniz.
+        Aynı anda yalnızca bir transkript işlemi başlatmanız önerilir.
+      </div>
+    </form>
+
+    <!-- Alternatif Bölme Aracı -->
+    <form method="POST" action="/split-audio" enctype="multipart/form-data" class="form-container col-md-6">
+      <h6 class="text-center text-secondary">🔧 Dosyanız 10 dakikadan uzun mu?</h6>
+      <p class="text-center text-muted mb-4">Dosyanızı 10 dakikalık parçalara bölerek ayrı ayrı transkript işlemi yapabilirsiniz.</p>
+
+      <div class="mb-3">
+        <input type="file" name="audio_file" accept=".mp3,.wav,.m4a" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-outline-primary w-100">📂 10 Dakikalık Parçalara Böl</button>
+    </form>
+
+    <!-- Parçalanmış Dosyalar Varsa -->
+    {% if audio_parts %}
+      <div class="form-container col-md-6">
+        <h6 class="text-center">🔗 İndirilebilir Parçalar</h6>
+        <ul class="list-group">
+          {% for part in audio_parts %}
+            <li class="list-group-item text-center">
+              <a href="{{ url_for('static', filename='clips/' + part.filename) }}" target="_blank">
+                🎧 Part {{ loop.index }} ({{ part.start_min }} - {{ part.end_min }} dk)
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+
+    <!-- Geri Dön Butonu -->
+    <div class="back-button text-center">
+      <a href="/" class="btn btn-outline-secondary">← Ana Sayfa</a>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-links">
+    <a href="/hakkimizda">Hakkımızda</a>
+    <a href="/iletisim">İletişim</a>
+    <a href="/gizlilik">Gizlilik Politikası</a>
+    <a href="/kullanim">Kullanım Koşulları</a>
+    <a href="/dmca">DMCA</a>
+  </div>
+
+  <script>
+    document.getElementById("transkript-form").addEventListener("submit", function () {
+      document.getElementById("loading").style.display = "block";
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
