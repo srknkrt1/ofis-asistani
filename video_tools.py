@@ -15,7 +15,11 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import tempfile
+from matplotlib.animation import FuncAnimation
+from matplotlib import rcParams
+import numpy as np
 AudioSegment.converter = "/usr/bin/ffmpeg"
+rcParams.update({'figure.autolayout': True})
 
 DOWNLOADS_DIR = "downloads"
 COOKIES_PATH = "cookies.txt"  # Gerekirse tam yolu yaz
@@ -205,6 +209,7 @@ def create_timeline_video(excel_file):
 
     plt.close(fig)
     return output_path
+    
 def generate_wordcloud_from_text(text, output_dir="static/wordclouds"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -257,4 +262,95 @@ def generate_wordcloud_from_text(text, output_dir="static/wordclouds"):
     plt.close()
 
     return output_path
+
+def _prepare_output_dir():
+    output_dir = "static/animations"
+    os.makedirs(output_dir, exist_ok=True)
+    return output_dir
+
+def _save_animation(fig, ani, ext="gif"):
+    output_dir = _prepare_output_dir()
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    path = os.path.join(output_dir, filename)
+    ani.save(path, writer='pillow', fps=10)
+    plt.close()
+    return path
+
+def create_animated_line_chart(data):
+    x = data.iloc[:, 0]
+    y = data.iloc[:, 1]
+    fig, ax = plt.subplots()
+    line, = ax.plot([], [], lw=2)
+    ax.set_xlim(min(x), max(x))
+    ax.set_ylim(min(y), max(y))
+
+    def init():
+        line.set_data([], [])
+        return line,
+
+    def update(frame):
+        line.set_data(x[:frame], y[:frame])
+        return line,
+
+    ani = FuncAnimation(fig, update, frames=len(x)+1, init_func=init, blit=True)
+    return _save_animation(fig, ani)
+
+def create_animated_bar_chart(data):
+    categories = data.iloc[:, 0]
+    values = data.iloc[:, 1]
+    fig, ax = plt.subplots()
+    bars = ax.bar(categories, [0]*len(values))
+    ax.set_ylim(0, max(values)*1.1)
+
+    def update(frame):
+        for i, bar in enumerate(bars):
+            bar.set_height(values[i] * frame / 10)
+        return bars
+
+    ani = FuncAnimation(fig, update, frames=11, blit=True)
+    return _save_animation(fig, ani)
+
+def create_animated_pie_chart(data):
+    labels = data.iloc[:, 0]
+    sizes = data.iloc[:, 1]
+    fig, ax = plt.subplots()
+
+    def update(frame):
+        ax.clear()
+        ax.pie(sizes[:frame+1], labels=labels[:frame+1], autopct='%1.1f%%')
+        ax.set_title("Pasta Grafiği")
+
+    ani = FuncAnimation(fig, update, frames=len(labels), repeat=False)
+    return _save_animation(fig, ani)
+
+def create_animated_radar_chart(data):
+    labels = data.columns[1:]
+    values = data.iloc[0, 1:].tolist()
+    angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
+    values += values[:1]
+    angles += angles[:1]
+    fig, ax = plt.subplots(subplot_kw=dict(polar=True))
+    line, = ax.plot([], [], 'b-')
+
+    def update(frame):
+        line.set_data(angles[:frame+1], values[:frame+1])
+        return line,
+
+    ani = FuncAnimation(fig, update, frames=len(labels)+1, blit=True)
+    return _save_animation(fig, ani)
+
+def create_animated_timeseries(data):
+    x = pd.to_datetime(data.iloc[:, 0])
+    y = data.iloc[:, 1]
+    fig, ax = plt.subplots()
+    line, = ax.plot([], [], lw=2)
+    ax.set_xlim(min(x), max(x))
+    ax.set_ylim(min(y), max(y))
+
+    def update(frame):
+        line.set_data(x[:frame], y[:frame])
+        return line,
+
+    ani = FuncAnimation(fig, update, frames=len(x)+1, blit=True)
+    return _save_animation(fig, ani)
 
