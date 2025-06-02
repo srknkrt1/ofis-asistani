@@ -22,6 +22,13 @@ from pdf_tools import (
     birlestir_pdf_listesi, bol_pdf, dondur_pdf, sikistir_pdf,
     pdf_to_word
 )
+from video_tools import (
+    create_animated_line_chart,
+    create_animated_bar_chart,
+    create_animated_pie_chart,
+    create_animated_radar_chart,
+    create_animated_timeseries
+)
 
 app = Flask(__name__)
 app.secret_key = 'Gu0z_4VlbNzNwJ8nHD3E2xz5G9p1J5HMIw5ZlGiZ8HI'
@@ -507,6 +514,27 @@ def wordcloud():
         return jsonify(success=True, url=f"/{output_path}")
     except Exception as e:
         return jsonify(success=False, error=str(e))
+
+@app.route('/upload-animation', methods=['POST'])
+def upload_animation():
+    chart_type = request.form.get('chartType')
+    file = request.files['file']
+    df = pd.read_excel(file)
+
+    if chart_type == 'line':
+        path = create_animated_line_chart(df)
+    elif chart_type == 'bar':
+        path = create_animated_bar_chart(df)
+    elif chart_type == 'pie':
+        path = create_animated_pie_chart(df)
+    elif chart_type == 'radar':
+        path = create_animated_radar_chart(df)
+    elif chart_type == 'timeseries':
+        path = create_animated_timeseries(df)
+    else:
+        return "Geçersiz grafik tipi", 400
+
+    return jsonify({"path": "/" + path})
 
 if __name__ == "__main__":
     app.run(debug=True)
