@@ -8,7 +8,7 @@ import pandas as pd
 import bar_chart_race as bcr
 from docx import Document  # eksiktiyse eklenmeli
 from transkript import transkripte_cevir
-from video_tools import indir_video, indir_instagram, indir_twitter,split_audio, create_kumeleme_html, create_timeline_video
+from video_tools import indir_video, indir_instagram, indir_twitter,split_audio, create_kumeleme_html, create_timeline_video, generate_wordcloud_from_text
 import fitz  # PyMuPDF
 import threading
 import uuid
@@ -493,6 +493,20 @@ def timeline():
     except Exception as e:
         return str(e), 500
 
+@app.route('/viz/wordcloud', methods=['POST'])
+def wordcloud():
+    try:
+        data = request.get_json()
+        text = data.get('text', '').strip()
+
+        if not text:
+            return jsonify(success=False, error="Metin boş olamaz.")
+
+        output_path = generate_wordcloud_from_text(text)
+
+        return jsonify(success=True, url=f"/{output_path}")
+    except Exception as e:
+        return jsonify(success=False, error=str(e))
 
 if __name__ == "__main__":
     app.run(debug=True)
