@@ -123,7 +123,7 @@
   </ul>
 
   <div class="tab-content mt-4">
-    <!-- Racing -->
+    <!-- Yarışan Veriler -->
     <div class="tab-pane fade show active" id="racing" role="tabpanel">
       <h4>🏁 Yarışan Veriler (Racing Bar Chart)</h4>
       <p>Excel dosyanızı yükleyerek verilerinizi görüntüleyin ve düzenleyin.</p>
@@ -143,7 +143,7 @@
       </div>
     </div>
 
-    <!-- Cluster -->
+    <!-- Kümeleme -->
     <div class="tab-pane fade" id="cluster" role="tabpanel">
       <h4>🧩 Kümeleme (K-Means) Görselleştirme</h4>
       <p>Verilerinizi gruplayarak kümeleme grafiği oluşturabilirsiniz.</p>
@@ -165,7 +165,7 @@
       <div id="clusterOutput" class="mt-4 text-center"></div>
     </div>
 
-    <!-- Timeline -->
+    <!-- Zaman Çizelgesi -->
     <div class="tab-pane fade" id="timeline" role="tabpanel">
       <h4>🕒 Zaman Çizelgesi</h4>
       <p>Verilerinizin zaman içindeki değişimini animasyonlu bir grafikle izleyin.</p>
@@ -181,8 +181,8 @@
 
       <div id="timelineStatus" class="mt-3 text-center text-success fw-bold"></div>
     </div>
-    
-    <!-- Word Cloud -->
+
+    <!-- Kelime Bulutu -->
     <div class="tab-pane fade" id="wordcloud" role="tabpanel">
       <h4>☁️ Kelime Bulutu (Word Cloud)</h4>
       <p>Yorum, açıklama veya serbest metni aşağıya yapıştırın. En sık geçen kelimelerle görsel bir kelime bulutu oluşturulur.</p>
@@ -198,25 +198,27 @@
 
       <div id="wordcloudOutput" class="mt-4 text-center"></div>
     </div>
-    <TabPanel>
-  <h3>📽 Hareketli Grafik Oluştur</h3>
-  <form id="animationForm">
-    <label>Grafik Tipi:</label>
-    <select name="chartType" id="chartType">
-      <option value="line">Çizgi Grafik</option>
-      <option value="bar">Sütun Grafik</option>
-      <option value="pie">Pasta Grafik</option>
-      <option value="radar">Radar Grafik</option>
-      <option value="timeseries">Zaman Serisi</option>
-    </select><br><br>
 
-    <label>Excel Dosyası Yükle:</label>
-    <input type="file" name="file" id="fileInput"><br><br>
+    <!-- Hareketli Grafik -->
+    <div class="tab-pane fade" id="animated" role="tabpanel">
+      <h3>📽 Hareketli Grafik Oluştur</h3>
+      <form id="animationForm">
+        <label for="chartType">Grafik Tipi:</label>
+        <select name="chartType" id="chartType" class="form-select">
+          <option value="line">Çizgi Grafik</option>
+          <option value="bar">Sütun Grafik</option>
+          <option value="pie">Pasta Grafik</option>
+          <option value="radar">Radar Grafik</option>
+          <option value="timeseries">Zaman Serisi</option>
+        </select><br>
 
-    <button type="submit">Grafiği Oluştur</button>
-  </form>
+        <label for="fileInput">Excel Dosyası Yükle:</label>
+        <input type="file" name="file" id="fileInput" class="form-control"><br>
 
-  <div id="animationResult" style="margin-top: 20px;"></div>
+        <button type="submit" class="btn btn-primary">Grafiği Oluştur</button>
+      </form>
+
+      <div id="animationResult" class="mt-4 text-center"></div>
     </div>
   </div>
 
