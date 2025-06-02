@@ -112,26 +112,23 @@
       <button class="nav-link" id="cluster-tab" data-bs-toggle="tab" data-bs-target="#cluster" type="button" role="tab">🧩 Kümeleme Grafiği</button>
     </li>
     <li class="nav-item" role="presentation">
+      <button class="nav-link" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline" type="button" role="tab">🕒 Zaman Çizelgesi</button>
+    </li>
+    <li class="nav-item" role="presentation">
       <button class="nav-link" id="animated-tab" data-bs-toggle="tab" data-bs-target="#animated" type="button" role="tab">🎞️ Hareketli Grafikler</button>
     </li>
   </ul>
 
-  <p class="text-muted mt-3 mb-2 text-center larger-text">
-    Yukarıdaki sekmelerden birini seçtikten sonra excel dosyanızı yükleyerek görselleştirme yapabilirsiniz.
-  </p>
-
-  <!-- Excel Yükleme Alanı -->
-  <div class="mb-3">
-    <label for="excelFile" class="form-label">Excel Dosyası Yükle</label>
-    <input class="form-control" type="file" id="excelFile" accept=".xlsx, .xls">
-  </div>
-
-  <!-- Sekme İçerikleri -->
   <div class="tab-content mt-4">
-    <!-- Racing Tab -->
+    <!-- Racing -->
     <div class="tab-pane fade show active" id="racing" role="tabpanel">
       <h4>🏁 Yarışan Veriler (Racing Bar Chart)</h4>
       <p>Excel dosyanızı yükleyerek verilerinizi görüntüleyin ve düzenleyin.</p>
+
+      <div class="mb-3">
+        <label for="racingFile" class="form-label">Excel Dosyası Yükle</label>
+        <input class="form-control" type="file" id="racingFile" accept=".xlsx, .xls">
+      </div>
 
       <div class="mb-3">
         <label for="videoTitle" class="form-label">Video Başlığı</label>
@@ -143,10 +140,15 @@
       </div>
     </div>
 
-    <!-- Cluster Tab -->
+    <!-- Cluster -->
     <div class="tab-pane fade" id="cluster" role="tabpanel">
       <h4>🧩 Kümeleme (K-Means) Görselleştirme</h4>
       <p>Verilerinizi gruplayarak kümeleme grafiği oluşturabilirsiniz.</p>
+
+      <div class="mb-3">
+        <label for="clusterFile" class="form-label">Excel Dosyası Yükle</label>
+        <input class="form-control" type="file" id="clusterFile" accept=".xlsx, .xls">
+      </div>
 
       <div class="mt-4">
         <label for="kSlider" class="form-label">Küme Sayısı (k): <span id="kValue">3</span></label>
@@ -160,7 +162,24 @@
       <div id="clusterOutput" class="mt-4 text-center"></div>
     </div>
 
-    <!-- Animated Tab -->
+    <!-- Timeline -->
+    <div class="tab-pane fade" id="timeline" role="tabpanel">
+      <h4>🕒 Zaman Çizelgesi</h4>
+      <p>Verilerinizin zaman içindeki değişimini animasyonlu bir grafikle izleyin.</p>
+
+      <div class="mb-3">
+        <label for="timelineFile" class="form-label">Excel Dosyası Yükle (Zaman sütunu içermeli)</label>
+        <input class="form-control" type="file" id="timelineFile" accept=".xlsx,.xls" />
+      </div>
+
+      <div class="text-center">
+        <button class="btn btn-primary" onclick="uploadTimeline()">🎬 Video Oluştur</button>
+      </div>
+
+      <div id="timelineStatus" class="mt-3 text-center text-success fw-bold"></div>
+    </div>
+
+    <!-- Animated -->
     <div class="tab-pane fade" id="animated" role="tabpanel">
       <h4>🎞️ Hareketli Grafikler</h4>
       <p>Verilerinizin animasyonlu bir şekilde sunumu için bu bölümü kullanabilirsiniz. (Geliştirme aşamasındadır)</p>
@@ -171,31 +190,24 @@
     </div>
   </div>
 
-  <!-- Bilgilendirme -->
-  <div class="mt-4">
-    <div class="alert alert-info border-0 shadow-sm rounded-4 p-4">
-      <h5 class="mb-2 text-center">📥 Excel Yükleyin, Tabloyu Düzenleyin ve Video Oluşturun</h5>
-      <p class="form-info text-muted mt-3 mb-2 text-center larger-text">
-        Excel dosyanızdaki verileri düzenledikten sonra animasyonlu video çıktısı alabilirsiniz. <br>
-        <strong>Tablonun ilk satırı başlık/kategorilerden oluşmalıdır</strong>, altındaki satırlar ise veri olarak işlenir. <br>
-        Bar renklendirme ve süre ayarlama gibi özelliklerle ilgili geliştirme süreci devam etmektedir.
-      </p>
-    </div>
+  <div class="alert alert-info border-0 shadow-sm rounded-4 p-4 mt-4">
+    <h5 class="mb-2 text-center">📥 Excel Yükleyin, Tabloyu Düzenleyin ve Video Oluşturun</h5>
+    <p class="form-info text-muted mt-3 mb-2 text-center">
+      Excel dosyanızdaki verileri düzenledikten sonra animasyonlu video çıktısı alabilirsiniz. <br>
+      <strong>Tablonun ilk satırı başlık/kategorilerden oluşmalıdır</strong>, altındaki satırlar ise veri olarak işlenir.
+    </p>
   </div>
 
-  <!-- Butonlar -->
   <div class="button-group">
     <button id="videoButton" style="background-color: #2c3e50;">🎬 Video Oluştur</button>
     <a href="/">Ana Sayfa</a>
   </div>
 
-  <!-- Gizli Form -->
   <form id="videoForm" style="display: none;">
     <input type="file" id="videoExcelFile" name="excel">
   </form>
 </div>
 
-<!-- Footer -->
 <div class="footer-links">
   <a href="/hakkimizda">Hakkımızda</a>
   <a href="/iletisim">İletişim</a>
@@ -206,20 +218,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  document.getElementById('excelFile').addEventListener('change', function(e) {
+  document.getElementById('racingFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Aynı dosyayı gizli input'a da aktar
     document.getElementById('videoExcelFile').files = e.target.files;
 
     const reader = new FileReader();
     reader.onload = function(e) {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-
-      const firstSheet = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheet];
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       renderTable(jsonData);
@@ -230,78 +239,63 @@
   function renderTable(data) {
     const table = document.getElementById('excelTable');
     table.innerHTML = '';
-
-    data.forEach((row, rowIndex) => {
+    data.forEach((row, i) => {
       const tr = document.createElement('tr');
       row.forEach(cell => {
-        const td = document.createElement(rowIndex === 0 ? 'th' : 'td');
-        td.contentEditable = rowIndex !== 0;
-        td.textContent = cell !== undefined ? cell : '';
-        tr.appendChild(td);
+        const cellElement = document.createElement(i === 0 ? 'th' : 'td');
+        cellElement.textContent = cell ?? '';
+        if (i !== 0) cellElement.contentEditable = true;
+        tr.appendChild(cellElement);
       });
       table.appendChild(tr);
     });
   }
 
-  document.getElementById('videoButton').addEventListener('click', function(e) {
-    const fileInput = document.getElementById('videoExcelFile');
-    const file = fileInput.files[0];
-    const videoTitle = document.getElementById('videoTitle').value.trim();
-    
-    if (!file) {
-      alert("Lütfen önce bir Excel dosyası yükleyin.");
-      return;
-    }
+  document.getElementById('videoButton').addEventListener('click', function() {
+    const file = document.getElementById('videoExcelFile').files[0];
+    const title = document.getElementById('videoTitle').value.trim();
 
-    if (!videoTitle) {
-      alert("Lütfen bir video başlığı girin.");
+    if (!file || !title) {
+      alert('Excel dosyası ve video başlığı gereklidir.');
       return;
     }
 
     const formData = new FormData();
     formData.append('excel', file);
-    formData.append('title', videoTitle);  // Başlık bilgisini form verisine ekle
+    formData.append('title', title);
 
     fetch('/video/create', {
       method: 'POST',
       body: formData
     })
-    .then(response => {
-      if (!response.ok) throw new Error("Video oluşturulamadı.");
-      return response.blob();
+    .then(res => {
+      if (!res.ok) throw new Error('Sunucudan dosya alınamadı.');
+      return res.blob();
     })
     .then(blob => {
-      const url = window.URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'yarisan_veriler_video.mp4';
-      document.body.appendChild(a);
       a.click();
-      a.remove();
     })
-    .catch(error => {
-      alert("Bir hata oluştu: " + error.message);
-    });
+    .catch(err => alert("Bir hata oluştu: " + err.message));
   });
-</script>
-<script>
+
   const kSlider = document.getElementById('kSlider');
   const kValue = document.getElementById('kValue');
   kSlider.addEventListener('input', () => kValue.textContent = kSlider.value);
 
   function generateCluster() {
-    const fileInput = document.getElementById('videoExcelFile');
-    const file = fileInput.files[0];
-    const k = kSlider.value;
-
+    const file = document.getElementById('clusterFile').files[0];
     if (!file) {
-      alert('Lütfen önce bir Excel dosyası yükleyin.');
+      alert('Lütfen bir Excel dosyası yükleyin.');
       return;
     }
 
     const formData = new FormData();
     formData.append('excel', file);
-    formData.append('k', k);
+    formData.append('k', kSlider.value);
 
     fetch('/viz/kumeleme', {
       method: 'POST',
@@ -311,13 +305,33 @@
     .then(data => {
       if (data.success) {
         document.getElementById('clusterOutput').innerHTML =
-          `<iframe src='${data.url}' width='100%' height='500px' frameborder='0'></iframe>`;
+          `<iframe src="${data.url}" width="100%" height="500" frameborder="0"></iframe>`;
       } else {
-        alert('Hata: ' + data.error);
+        alert('Sunucu hatası: ' + data.error);
       }
     })
-    .catch(err => {
-      alert('İstek sırasında bir hata oluştu: ' + err.message);
+    .catch(err => alert('İstek hatası: ' + err.message));
+  }
+
+  function uploadTimeline() {
+    const file = document.getElementById("timelineFile").files[0];
+    const status = document.getElementById("timelineStatus");
+
+    if (!file) {
+      status.textContent = "Lütfen bir Excel dosyası yükleyin.";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("excel", file);
+
+    fetch("/timeline", {
+      method: "POST",
+      body: formData
+    }).then(response => {
+      status.textContent = response.ok
+        ? "Zaman çizelgesi başarıyla oluşturuldu!"
+        : "Dosya işlenemedi. Lütfen kontrol edin.";
     });
   }
 </script>
