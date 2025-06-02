@@ -115,6 +115,9 @@
       <button class="nav-link" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline" type="button" role="tab">🕒 Zaman Çizelgesi</button>
     </li>
     <li class="nav-item" role="presentation">
+      <button class="nav-link" id="wordcloud-tab" data-bs-toggle="tab" data-bs-target="#wordcloud" type="button" role="tab">☁️ Kelime Bulutu</button>
+    </li>
+    <li class="nav-item" role="presentation">
       <button class="nav-link" id="animated-tab" data-bs-toggle="tab" data-bs-target="#animated" type="button" role="tab">🎞️ Hareketli Grafikler</button>
     </li>
   </ul>
@@ -178,7 +181,23 @@
 
       <div id="timelineStatus" class="mt-3 text-center text-success fw-bold"></div>
     </div>
+    
+    <!-- Word Cloud -->
+    <div class="tab-pane fade" id="wordcloud" role="tabpanel">
+      <h4>☁️ Kelime Bulutu (Word Cloud)</h4>
+      <p>Yorum, açıklama veya serbest metni aşağıya yapıştırın. En sık geçen kelimelerle görsel bir kelime bulutu oluşturulur.</p>
 
+      <div class="mb-3">
+        <label for="wordcloudText" class="form-label">Metin Girişi</label>
+        <textarea class="form-control" id="wordcloudText" rows="6" placeholder="Buraya metni yapıştırın..."></textarea>
+      </div>
+
+      <div class="text-center mt-3">
+        <button class="btn btn-primary" onclick="generateWordCloud()">Kelime Bulutunu Oluştur</button>
+      </div>
+
+      <div id="wordcloudOutput" class="mt-4 text-center"></div>
+    </div>
     <!-- Animated -->
     <div class="tab-pane fade" id="animated" role="tabpanel">
       <h4>🎞️ Hareketli Grafikler</h4>
@@ -334,6 +353,32 @@
         : "Dosya işlenemedi. Lütfen kontrol edin.";
     });
   }
+
+  function generateWordCloud() {
+  const text = document.getElementById('wordcloudText').value.trim();
+  if (!text) {
+    alert('Lütfen analiz edilecek metni girin.');
+    return;
+  }
+
+  fetch('/viz/wordcloud', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ text: text })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('wordcloudOutput').innerHTML =
+        `<img src="${data.url}" alt="Kelime Bulutu" style="max-width: 100%; height: auto;" />`;
+    } else {
+      alert('Hata: ' + data.error);
+    }
+  })
+  .catch(err => alert('Bir hata oluştu: ' + err.message));
+}
 </script>
 </body>
 </html>
