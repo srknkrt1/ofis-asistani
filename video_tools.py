@@ -12,8 +12,10 @@ from yt_dlp.utils import DownloadError
 import pandas as pd
 from sklearn.cluster import KMeans
 import plotly.express as px
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import tempfile
 AudioSegment.converter = "/usr/bin/ffmpeg"
-
 
 DOWNLOADS_DIR = "downloads"
 COOKIES_PATH = "cookies.txt"  # Gerekirse tam yolu yaz
@@ -168,4 +170,39 @@ def create_kumeleme_html(file, n_clusters=3):
 
     fig.write_html(output_path)
     return "/" + output_path
+
+def create_timeline_video(excel_file):
+    df = pd.read_excel(excel_file)
+
+    # Zaman, kategori, değer kolonları varsayalım
+    # Örnek: Zaman, Şehir, Nüfus
+    df.columns = [col.strip() for col in df.columns]
+    time_col = df.columns[0]
+    category_col = df.columns[1]
+    value_col = df.columns[2]
+
+    # Zaman sırasına göre sırala
+    df = df.sort_values(by=time_col)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    def animate(i):
+        ax.clear()
+        current_time = sorted(df[time_col].unique())[i]
+        data = df[df[time_col] == current_time]
+        data_sorted = data.sort_values(by=value_col, ascending=True)
+        ax.barh(data_sorted[category_col], data_sorted[value_col], color='skyblue')
+        ax.set_title(f"{time_col}: {current_time}", fontsize=16)
+        ax.set_xlabel(value_col)
+        ax.set_xlim(0, df[value_col].max() * 1.1)
+
+    unique_times = sorted(df[time_col].unique())
+    ani = animation.FuncAnimation(fig, animate, frames=len(unique_times), repeat=False)
+
+    temp_dir = tempfile.gettempdir()
+    output_path = os.path.join(temp_dir, "timeline_video.mp4")
+    ani.save(output_path, writer="ffmpeg", fps=2)
+
+    plt.close(fig)
+    return output_path
 
