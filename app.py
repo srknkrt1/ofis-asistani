@@ -8,7 +8,7 @@ import pandas as pd
 import bar_chart_race as bcr
 from docx import Document  # eksiktiyse eklenmeli
 from transkript import transkripte_cevir
-from video_tools import indir_video, indir_instagram, indir_twitter,split_audio
+from video_tools import indir_video, indir_instagram, indir_twitter,split_audio, create_kumeleme_html
 import fitz  # PyMuPDF
 import threading
 import uuid
@@ -469,6 +469,16 @@ def split_audio_route():
     parts = split_audio(filepath, chunk_length_minutes=10, output_dir="static/clips")
 
     return render_template('transkript.html', audio_parts=parts)
+
+@app.route("/viz/kumeleme", methods=["POST"])
+def viz_kumeleme():
+    file = request.files["excel"]
+    k = int(request.form.get("k", 3))  # varsayılan 3 küme
+    try:
+        output_url = create_kumeleme_html(file, n_clusters=k)
+        return jsonify({"success": True, "url": output_url})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 if __name__ == "__main__":
     app.run(debug=True)
