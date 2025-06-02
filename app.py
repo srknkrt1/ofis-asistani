@@ -534,7 +534,8 @@ def upload_animation():
     else:
         return "Geçersiz grafik tipi", 400
 
-    return jsonify({"path": "/" + path})
+    return jsonify({"success": True, "path": f"/{path}"})
+
 
 if __name__ == "__main__":
     app.run(debug=True)
