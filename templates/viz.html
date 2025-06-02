@@ -198,14 +198,25 @@
 
       <div id="wordcloudOutput" class="mt-4 text-center"></div>
     </div>
-    <!-- Animated -->
-    <div class="tab-pane fade" id="animated" role="tabpanel">
-      <h4>🎞️ Hareketli Grafikler</h4>
-      <p>Verilerinizin animasyonlu bir şekilde sunumu için bu bölümü kullanabilirsiniz. (Geliştirme aşamasındadır)</p>
+    <TabPanel>
+  <h3>📽 Hareketli Grafik Oluştur</h3>
+  <form id="animationForm">
+    <label>Grafik Tipi:</label>
+    <select name="chartType" id="chartType">
+      <option value="line">Çizgi Grafik</option>
+      <option value="bar">Sütun Grafik</option>
+      <option value="pie">Pasta Grafik</option>
+      <option value="radar">Radar Grafik</option>
+      <option value="timeseries">Zaman Serisi</option>
+    </select><br><br>
 
-      <div class="text-center mt-3">
-        <button class="btn btn-primary">Grafik Oluştur</button>
-      </div>
+    <label>Excel Dosyası Yükle:</label>
+    <input type="file" name="file" id="fileInput"><br><br>
+
+    <button type="submit">Grafiği Oluştur</button>
+  </form>
+
+  <div id="animationResult" style="margin-top: 20px;"></div>
     </div>
   </div>
 
@@ -380,5 +391,28 @@
   .catch(err => alert('Bir hata oluştu: ' + err.message));
 }
 </script>
+<script>
+    document.getElementById("animationForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("chartType", document.getElementById("chartType").value);
+      formData.append("file", document.getElementById("fileInput").files[0]);
+
+      fetch("/upload-animation", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("animationResult").innerHTML = \`
+          <video controls autoplay loop width="500">
+            <source src="\${data.path}" type="video/mp4">
+            <img src="\${data.path}" alt="grafik">
+          </video>
+          <br><a href="\${data.path}" download>İndir</a>
+        \`;
+      });
+    });
+  </script>
 </body>
 </html>
