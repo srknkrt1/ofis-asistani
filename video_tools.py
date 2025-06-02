@@ -205,4 +205,56 @@ def create_timeline_video(excel_file):
 
     plt.close(fig)
     return output_path
+def generate_wordcloud_from_text(text, output_dir="static/wordclouds"):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Türkçe stopwords
+    turkish_stopwords = {
+        "ve", "veya", "ama", "fakat", "ancak", "çok", "gibi", "ise", "de", "da",
+        "ile", "bir", "bu", "şu", "o", "ki", "ne", "mi", "mı", "mu", "mü", "çünkü",
+        "daha", "en", "her", "bazı", "hiç", "için", "üzere", "artık", "hem", "ya",
+        "sadece", "bile", "yani", "ben", "sen", "biz", "siz", "onlar", "vardır", "yoktur"
+    }
+
+    combined_stopwords = STOPWORDS.union(turkish_stopwords)
+
+    # Kelime bulutunu oluştur
+    wordcloud = WordCloud(
+        width=800,
+        height=400,
+        background_color='white',
+        stopwords=combined_stopwords
+    ).generate(text)
+
+    # En sık geçen ilk 4 kelimeyi bul
+    freqs = wordcloud.words_
+    top4 = list(freqs.keys())[:4]
+
+    # Renkleri belirle
+    def color_func(word, *args, **kwargs):
+        if word == top4[0]:
+            return "#e74c3c"  # kırmızı
+        elif word == top4[1]:
+            return "#2980b9"  # mavi
+        elif word == top4[2]:
+            return "#27ae60"  # yeşil
+        elif word == top4[3]:
+            return "#f39c12"  # turuncu
+        else:
+            return "gray"
+
+    wordcloud.recolor(color_func=color_func)
+
+    filename = f"{uuid.uuid4().hex}.png"
+    output_path = os.path.join(output_dir, filename)
+
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig(output_path, format='png')
+    plt.close()
+
+    return output_path
 
