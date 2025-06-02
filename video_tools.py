@@ -9,7 +9,11 @@ import uuid
 import re
 import unicodedata
 from yt_dlp.utils import DownloadError
+import pandas as pd
+from sklearn.cluster import KMeans
+import plotly.express as px
 AudioSegment.converter = "/usr/bin/ffmpeg"
+
 
 DOWNLOADS_DIR = "downloads"
 COOKIES_PATH = "cookies.txt"  # Gerekirse tam yolu yaz
@@ -145,3 +149,23 @@ def split_audio(file_path, chunk_length_minutes=10, output_dir="static/clips"):
         })
 
     return parts
+    
+def create_kumeleme_html(file, n_clusters=3):
+    df = pd.read_excel(file)
+    if df.shape[1] < 2:
+        raise ValueError("En az iki sayısal sütun gerekli.")
+
+    X = df.select_dtypes(include=['float64', 'int64']).iloc[:, :2]  # İlk iki sayısal sütun
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(X)
+    df['Küme'] = kmeans.labels_
+
+    fig = px.scatter(df, x=X.columns[0], y=X.columns[1], color='Küme',
+                     title=f'{n_clusters} Küme ile K-Means Analizi', template='plotly_white')
+
+    unique_id = uuid.uuid4().hex
+    output_path = f"static/kumeleme/kumeleme_{unique_id}.html"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    fig.write_html(output_path)
+    return "/" + output_path
+
