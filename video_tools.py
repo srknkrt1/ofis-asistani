@@ -1,29 +1,30 @@
 import os
-os.environ["PATH"] += os.pathsep + "/usr/bin"  # ffmpeg yolunu garanti et
 import logging
-logging.basicConfig(level=logging.INFO)
-from yt_dlp import YoutubeDL
-from pydub import AudioSegment
-from pydub.utils import which
-import uuid
 import re
 import unicodedata
+import uuid
+import tempfile
+from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
+from pydub import AudioSegment
+from pydub.utils import which
 import pandas as pd
 from sklearn.cluster import KMeans
 import plotly.express as px
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import tempfile
 from matplotlib.animation import FuncAnimation
 from matplotlib import rcParams
 import numpy as np
+from wordcloud import WordCloud, STOPWORDS
+
+# Genel ayarlar
+os.environ["PATH"] += os.pathsep + "/usr/bin"
 AudioSegment.converter = "/usr/bin/ffmpeg"
 rcParams.update({'figure.autolayout': True})
+logging.basicConfig(level=logging.INFO)
 
 DOWNLOADS_DIR = "downloads"
-COOKIES_PATH = "cookies.txt"  # Gerekirse tam yolu yaz
-
+COOKIES_PATH = "cookies.txt"  # Gerekirse tam yolu belirt
 
 def temizle_gecici_dosyalar():
     uzantilar = ('.webm', '.m4a', '.f140.m4a', '.f399.mp4', '.temp')
@@ -32,7 +33,7 @@ def temizle_gecici_dosyalar():
             try:
                 os.remove(dosya)
             except Exception as e:
-                print(f"{dosya} silinirken hata: {e}")
+                logging.warning(f"{dosya} silinirken hata: {e}")
 
 def temizle_dosya_adi(baslik):
     ascii_ad = unicodedata.normalize('NFKD', baslik).encode('ascii', 'ignore').decode('ascii')
@@ -44,15 +45,15 @@ def indir_video(url, secenek="video"):
     if not os.path.exists(DOWNLOADS_DIR):
         os.makedirs(DOWNLOADS_DIR)
 
-    print(f"▶ indir_video başladı: url={url}, secenek={secenek}")
+    logging.info(f"İndirme başladı: url={url}, secenek={secenek}")
 
     try:
+        base_outtmpl = os.path.join(DOWNLOADS_DIR, f"%(title)s_{uuid.uuid4().hex}.%(ext)s")
         ydl_opts = {
             "cookiefile": COOKIES_PATH,
-            "outtmpl": os.path.join(DOWNLOADS_DIR, "%(title)s.%(ext)s"),
+            "outtmpl": base_outtmpl,
             "quiet": True,
-            "noplaylist": True,
-            "overwrites": True,
+            "noplaylist": True
         }
 
         if secenek == "audio":
@@ -63,47 +64,38 @@ def indir_video(url, secenek="video"):
                     "preferredcodec": "mp3",
                     "preferredquality": "192",
                 }],
-                "outtmpl": os.path.join(DOWNLOADS_DIR, f"%(title)s_{uuid.uuid4().hex}.%(ext)s"),
             })
-        elif secenek == "video":
+        else:
             ydl_opts.update({
                 "format": "bestvideo+bestaudio/best",
-                "merge_output_format": "mp4",
-                "outtmpl": os.path.join(DOWNLOADS_DIR, f"%(title)s_{uuid.uuid4().hex}.%(ext)s"),
+                "merge_output_format": "mp4"
             })
 
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             downloaded_path = ydl.prepare_filename(info)
 
-            # Eğer mp3'e dönüştürüldüyse uzantısı değişmiş olabilir
             if secenek == "audio":
                 downloaded_path = os.path.splitext(downloaded_path)[0] + ".mp3"
 
             downloaded_path = os.path.abspath(downloaded_path)
 
             if os.path.exists(downloaded_path):
-                print(f"✔ İndirme tamamlandı: {downloaded_path}")
+                logging.info(f"İndirme tamamlandı: {downloaded_path}")
                 return downloaded_path
             else:
-                print("⚠ Dosya bulunamadı.")
+                logging.warning("Dosya bulunamadı.")
                 return None
 
     except DownloadError as e:
-        print(f"✘ YT-DLP Hatası: {str(e)}")
+        logging.error(f"YT-DLP Hatası: {str(e)}")
         return None
     except Exception as e:
-        print(f"✘ Beklenmeyen Hata: {str(e)}")
+        logging.error(f"Beklenmeyen Hata: {str(e)}")
         return None
 
-def indir_instagram(url):
-    return indir_video_genel(url, "instagram")
-
-def indir_twitter(url):
-    return indir_video_genel(url, "twitter")
-
-def indir_video_genel(url, kaynak):
-    temp_dir = "downloads"
+def indir_video_genel(url, kaynak="genel"):
+    temp_dir = DOWNLOADS_DIR
     os.makedirs(temp_dir, exist_ok=True)
 
     ydl_opts = {
@@ -116,26 +108,26 @@ def indir_video_genel(url, kaynak):
             info = ydl.extract_info(url, download=True)
             downloaded_file = ydl.prepare_filename(info)
 
-            # Temizlenmiş adla yeniden adlandır (isteğe bağlı)
             ext = info.get("ext", "mp4")
             temiz_ad = temizle_dosya_adi(info.get("title", "video"))
             yeni_yol = os.path.join(temp_dir, f"{temiz_ad}.{ext}")
 
-            if downloaded_file != yeni_yol:
-                os.rename(downloaded_file, yeni_yol)
+            if os.path.exists(yeni_yol):
+                yeni_yol = os.path.join(temp_dir, f"{temiz_ad}_{uuid.uuid4().hex}.{ext}")
 
+            os.rename(downloaded_file, yeni_yol)
             return os.path.abspath(yeni_yol)
+
     except Exception as e:
-        print(f"[{kaynak.upper()}] Hata oluştu: {e}")
+        logging.error(f"[{kaynak.upper()}] Hata oluştu: {e}")
         return None
 
 def split_audio(file_path, chunk_length_minutes=10, output_dir="static/clips"):
     audio = AudioSegment.from_file(file_path)
     duration_ms = len(audio)
-    chunk_length_ms = 599000  # 9 dakika 59 saniye
+    chunk_length_ms = chunk_length_minutes * 60 * 1000 - 1000
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
     parts = []
     for i in range(0, duration_ms, chunk_length_ms):
@@ -143,25 +135,21 @@ def split_audio(file_path, chunk_length_minutes=10, output_dir="static/clips"):
         filename = f"{uuid.uuid4().hex}_part{i // chunk_length_ms + 1}.mp3"
         output_path = os.path.join(output_dir, filename)
         part.export(output_path, format="mp3")
-        
-        # Başlangıç ve bitiş dakikalarını düzgün hesapla
-        start_min = i // 60000
-        end_min = min((i + chunk_length_ms) // 60000, duration_ms // 60000)
-        
+
         parts.append({
             "filename": filename,
-            "start_min": start_min,
-            "end_min": end_min
+            "start_min": i // 60000,
+            "end_min": min((i + chunk_length_ms) // 60000, duration_ms // 60000)
         })
 
     return parts
-    
+
 def create_kumeleme_html(file, n_clusters=3):
     df = pd.read_excel(file)
     if df.shape[1] < 2:
         raise ValueError("En az iki sayısal sütun gerekli.")
 
-    X = df.select_dtypes(include=['float64', 'int64']).iloc[:, :2]  # İlk iki sayısal sütun
+    X = df.select_dtypes(include=['float64', 'int64']).iloc[:, :2]
     kmeans = KMeans(n_clusters=n_clusters, random_state=42).fit(X)
     df['Küme'] = kmeans.labels_
 
@@ -177,15 +165,8 @@ def create_kumeleme_html(file, n_clusters=3):
 
 def create_timeline_video(excel_file):
     df = pd.read_excel(excel_file)
-
-    # Zaman, kategori, değer kolonları varsayalım
-    # Örnek: Zaman, Şehir, Nüfus
     df.columns = [col.strip() for col in df.columns]
-    time_col = df.columns[0]
-    category_col = df.columns[1]
-    value_col = df.columns[2]
-
-    # Zaman sırasına göre sırala
+    time_col, category_col, value_col = df.columns[:3]
     df = df.sort_values(by=time_col)
 
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -201,7 +182,7 @@ def create_timeline_video(excel_file):
         ax.set_xlim(0, df[value_col].max() * 1.1)
 
     unique_times = sorted(df[time_col].unique())
-    ani = animation.FuncAnimation(fig, animate, frames=len(unique_times), repeat=False)
+    ani = FuncAnimation(fig, animate, frames=len(unique_times), repeat=False)
 
     temp_dir = tempfile.gettempdir()
     output_path = os.path.join(temp_dir, "timeline_video.mp4")
@@ -209,12 +190,10 @@ def create_timeline_video(excel_file):
 
     plt.close(fig)
     return output_path
-    
-def generate_wordcloud_from_text(text, output_dir="static/wordclouds"):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
-    # Türkçe stopwords
+def generate_wordcloud_from_text(text, output_dir="static/wordclouds"):
+    os.makedirs(output_dir, exist_ok=True)
+
     turkish_stopwords = {
         "ve", "veya", "ama", "fakat", "ancak", "çok", "gibi", "ise", "de", "da",
         "ile", "bir", "bu", "şu", "o", "ki", "ne", "mi", "mı", "mu", "mü", "çünkü",
@@ -223,31 +202,18 @@ def generate_wordcloud_from_text(text, output_dir="static/wordclouds"):
     }
 
     combined_stopwords = STOPWORDS.union(turkish_stopwords)
-
-    # Kelime bulutunu oluştur
     wordcloud = WordCloud(
-        width=800,
-        height=400,
-        background_color='white',
-        stopwords=combined_stopwords
+        width=800, height=400, background_color='white', stopwords=combined_stopwords
     ).generate(text)
 
-    # En sık geçen ilk 4 kelimeyi bul
     freqs = wordcloud.words_
     top4 = list(freqs.keys())[:4]
 
-    # Renkleri belirle
     def color_func(word, *args, **kwargs):
-        if word == top4[0]:
-            return "#e74c3c"  # kırmızı
-        elif word == top4[1]:
-            return "#2980b9"  # mavi
-        elif word == top4[2]:
-            return "#27ae60"  # yeşil
-        elif word == top4[3]:
-            return "#f39c12"  # turuncu
-        else:
-            return "gray"
+        colors = ["#e74c3c", "#2980b9", "#27ae60", "#f39c12"]
+        if word in top4:
+            return colors[top4.index(word)]
+        return "gray"
 
     wordcloud.recolor(color_func=color_func)
 
@@ -272,7 +238,8 @@ def _save_animation(fig, ani, ext="gif"):
     output_dir = _prepare_output_dir()
     filename = f"{uuid.uuid4().hex}.{ext}"
     path = os.path.join(output_dir, filename)
-    ani.save(path, writer='pillow', fps=10)
+    writer = "pillow" if ext == "gif" else "ffmpeg"
+    ani.save(path, writer=writer, fps=10)
     plt.close()
     return path
 
@@ -329,7 +296,9 @@ def create_animated_radar_chart(data):
     angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
     values += values[:1]
     angles += angles[:1]
+
     fig, ax = plt.subplots(subplot_kw=dict(polar=True))
+    ax.set_ylim(0, max(values))
     line, = ax.plot([], [], 'b-')
 
     def update(frame):
@@ -353,4 +322,3 @@ def create_animated_timeseries(data):
 
     ani = FuncAnimation(fig, update, frames=len(x)+1, blit=True)
     return _save_animation(fig, ani)
-
