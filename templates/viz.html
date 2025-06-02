@@ -36,13 +36,14 @@
       background-color: #2c3e50;
       color: white;
     }
+
     .tab-pane {
       background: white;
       padding: 30px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.08);
-      margin-top: 20px;
     }
+
     .footer-links {
       background-color: #e0e0e0;
       padding: 25px 0;
@@ -50,15 +51,18 @@
       font-size: 16px;
       margin-top: auto;
     }
+
     .footer-links a {
       margin: 0 15px;
       color: #333;
       text-decoration: none;
     }
+
     .button-group {
       text-align: center;
       margin-top: 40px;
     }
+
     .button-group a, .button-group button {
       display: inline-block;
       padding: 15px 30px;
@@ -71,19 +75,24 @@
       text-decoration: none;
       transition: background-color 0.3s ease;
     }
+
     .button-group a:hover, .button-group button:hover {
       background-color: #2980b9;
     }
+
     .alert-info {
       background-color: #eef6fb;
       color: #2c3e50;
     }
+
     .alert-info h5 {
       font-size: 1.2rem;
       font-weight: 600;
     }
+
     .alert-info p {
       font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -100,61 +109,93 @@
       <button class="nav-link active" id="racing-tab" data-bs-toggle="tab" data-bs-target="#racing" type="button" role="tab">🏁 Yarışan Veriler</button>
     </li>
     <li class="nav-item" role="presentation">
+      <button class="nav-link" id="cluster-tab" data-bs-toggle="tab" data-bs-target="#cluster" type="button" role="tab">🧩 Kümeleme Grafiği</button>
+    </li>
+    <li class="nav-item" role="presentation">
       <button class="nav-link" id="animated-tab" data-bs-toggle="tab" data-bs-target="#animated" type="button" role="tab">🎞️ Hareketli Grafikler</button>
     </li>
   </ul>
 
-  <div class="tab-pane fade show active" id="racing" role="tabpanel">
-    <h4>🏁 Yarışan Veriler (Racing Bar Chart)</h4>
-    <p>Excel dosyanızı yükleyerek verilerinizi görüntüleyin ve düzenleyin.</p>
+  <p class="text-muted mt-3 mb-2 text-center larger-text">
+    Yukarıdaki sekmelerden birini seçtikten sonra excel dosyanızı yükleyerek görselleştirme yapabilirsiniz.
+  </p>
 
-    <!-- Başlık Girişi -->
-    <div class="mb-3">
-      <label for="videoTitle" class="form-label">Video Başlığı</label>
-      <input type="text" class="form-control" id="videoTitle" placeholder="Başlık girin" />
+  <!-- Excel Yükleme Alanı -->
+  <div class="mb-3">
+    <label for="excelFile" class="form-label">Excel Dosyası Yükle</label>
+    <input class="form-control" type="file" id="excelFile" accept=".xlsx, .xls">
+  </div>
+
+  <!-- Sekme İçerikleri -->
+  <div class="tab-content mt-4">
+    <!-- Racing Tab -->
+    <div class="tab-pane fade show active" id="racing" role="tabpanel">
+      <h4>🏁 Yarışan Veriler (Racing Bar Chart)</h4>
+      <p>Excel dosyanızı yükleyerek verilerinizi görüntüleyin ve düzenleyin.</p>
+
+      <div class="mb-3">
+        <label for="videoTitle" class="form-label">Video Başlığı</label>
+        <input type="text" class="form-control" id="videoTitle" placeholder="Başlık girin" />
+      </div>
+
+      <div id="excelTableContainer" class="table-responsive mt-4">
+        <table id="excelTable" class="table table-bordered table-striped"></table>
+      </div>
     </div>
 
-    <!-- Excel Yükleme Formu -->
-    <div class="mb-3">
-      <input class="form-control" type="file" id="excelFile" accept=".xlsx, .xls">
+    <!-- Cluster Tab -->
+    <div class="tab-pane fade" id="cluster" role="tabpanel">
+      <h4>🧩 Kümeleme (K-Means) Görselleştirme</h4>
+      <p>Verilerinizi gruplayarak kümeleme grafiği oluşturabilirsiniz.</p>
+
+      <div class="mt-4">
+        <label for="kSlider" class="form-label">Küme Sayısı (k): <span id="kValue">3</span></label>
+        <input type="range" class="form-range" min="2" max="10" value="3" id="kSlider" />
+      </div>
+
+      <div class="text-center mt-3">
+        <button class="btn btn-primary" onclick="generateCluster()">Kümeleme Grafiğini Oluştur</button>
+      </div>
+
+      <div id="clusterOutput" class="mt-4 text-center"></div>
     </div>
 
-    <!-- Tabloyu Göster -->
-    <div id="excelTableContainer" class="table-responsive mt-4">
-      <table id="excelTable" class="table table-bordered table-striped"></table>
+    <!-- Animated Tab -->
+    <div class="tab-pane fade" id="animated" role="tabpanel">
+      <h4>🎞️ Hareketli Grafikler</h4>
+      <p>Verilerinizin animasyonlu bir şekilde sunumu için bu bölümü kullanabilirsiniz. (Geliştirme aşamasındadır)</p>
+
+      <div class="text-center mt-3">
+        <button class="btn btn-primary">Grafik Oluştur</button>
+      </div>
     </div>
   </div>
 
-  <div class="tab-pane fade" id="animated" role="tabpanel">
-    <h4>🎞️ Hareketli Grafikler</h4>
-    <p>Verilerinizin animasyonlu bir şekilde sunumu için bu bölümü kullanabilirsiniz.(Geliştirme aşamasındadır) </p>
-    <div class="text-center mt-3">
-      <button class="btn btn-primary">Grafik Oluştur</button>
-    </div>
-  </div>
-
+  <!-- Bilgilendirme -->
   <div class="mt-4">
-  <div class="alert alert-info border-0 shadow-sm rounded-4 p-4">
-    <h5 class="mb-2 text-center">📥 Excel Yükleyin, Tabloyu Düzenleyin ve Video Oluşturun</h5>
-    <p class="form-info text-muted mt-3 mb-2 text-center larger-text">
-      Excel dosyanızdaki verileri düzenledikten sonra animasyonlu video çıktısı alabilirsiniz. <br>
-      <strong>Tablonun ilk satırı başlık/kategorilerden oluşmalıdır</strong>, altındaki satırlar ise veri olarak işlenir. <br>
-      Bar renklendirme ve süre ayarlama gibi özelliklerle ilgili geliştirme süreci devam etmektedir.
-    </p>
+    <div class="alert alert-info border-0 shadow-sm rounded-4 p-4">
+      <h5 class="mb-2 text-center">📥 Excel Yükleyin, Tabloyu Düzenleyin ve Video Oluşturun</h5>
+      <p class="form-info text-muted mt-3 mb-2 text-center larger-text">
+        Excel dosyanızdaki verileri düzenledikten sonra animasyonlu video çıktısı alabilirsiniz. <br>
+        <strong>Tablonun ilk satırı başlık/kategorilerden oluşmalıdır</strong>, altındaki satırlar ise veri olarak işlenir. <br>
+        Bar renklendirme ve süre ayarlama gibi özelliklerle ilgili geliştirme süreci devam etmektedir.
+      </p>
+    </div>
   </div>
-  </div>
-  
+
+  <!-- Butonlar -->
   <div class="button-group">
     <button id="videoButton" style="background-color: #2c3e50;">🎬 Video Oluştur</button>
     <a href="/">Ana Sayfa</a>
   </div>
 
-  <!-- Gizli form sadece JS için -->
+  <!-- Gizli Form -->
   <form id="videoForm" style="display: none;">
     <input type="file" id="videoExcelFile" name="excel">
   </form>
 </div>
 
+<!-- Footer -->
 <div class="footer-links">
   <a href="/hakkimizda">Hakkımızda</a>
   <a href="/iletisim">İletişim</a>
@@ -242,6 +283,43 @@
       alert("Bir hata oluştu: " + error.message);
     });
   });
+</script>
+<script>
+  const kSlider = document.getElementById('kSlider');
+  const kValue = document.getElementById('kValue');
+  kSlider.addEventListener('input', () => kValue.textContent = kSlider.value);
+
+  function generateCluster() {
+    const fileInput = document.getElementById('videoExcelFile');
+    const file = fileInput.files[0];
+    const k = kSlider.value;
+
+    if (!file) {
+      alert('Lütfen önce bir Excel dosyası yükleyin.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('excel', file);
+    formData.append('k', k);
+
+    fetch('/viz/kumeleme', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('clusterOutput').innerHTML =
+          `<iframe src='${data.url}' width='100%' height='500px' frameborder='0'></iframe>`;
+      } else {
+        alert('Hata: ' + data.error);
+      }
+    })
+    .catch(err => {
+      alert('İstek sırasında bir hata oluştu: ' + err.message);
+    });
+  }
 </script>
 </body>
 </html>
