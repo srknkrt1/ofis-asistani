@@ -8,7 +8,7 @@ import pandas as pd
 import bar_chart_race as bcr
 from docx import Document  # eksiktiyse eklenmeli
 from transkript import transkripte_cevir
-from video_tools import indir_video, indir_instagram, indir_twitter,split_audio, create_kumeleme_html
+from video_tools import indir_video, indir_instagram, indir_twitter,split_audio, create_kumeleme_html, create_timeline_video
 import fitz  # PyMuPDF
 import threading
 import uuid
@@ -479,6 +479,20 @@ def viz_kumeleme():
         return jsonify({"success": True, "url": output_url})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
+@app.route("/timeline", methods=["POST"])
+def timeline():
+    if "excel" not in request.files:
+        return "Dosya bulunamadı", 400
+
+    file = request.files["excel"]
+
+    try:
+        output_path = create_timeline_video(file)
+        return jsonify({"success": True, "video_path": output_path})
+    except Exception as e:
+        return str(e), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
