@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>DijitalHamal | Veri Görselleştirme ve Racing Bar Grafik</title>
+  <meta name="description" content="Verilerinizi etkileyici grafiklerle görselleştirin. Racing bar chart gibi dinamik grafiklerle analizleri canlandırın.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="canonical" href="{{ request.url }}" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/static/images/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg" />
+  <link rel="shortcut icon" href="/static/images/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png" />
+  <link rel="manifest" href="/static/images/site.webmanifest" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      background: #f4f7fa;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+    }
+
+    .nav-tabs .nav-link.active {
+      background-color: #2c3e50;
+      color: white;
+    }
+
+    .tab-pane {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+
+    .footer-links {
+      background-color: #e0e0e0;
+      padding: 25px 0;
+      text-align: center;
+      font-size: 16px;
+      margin-top: auto;
+    }
+
+    .footer-links a {
+      margin: 0 15px;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .button-group {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .button-group a, .button-group button {
+      display: inline-block;
+      padding: 15px 30px;
+      background-color: #3498db;
+      color: white;
+      font-size: 16px;
+      border-radius: 12px;
+      margin: 10px;
+      border: none;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .button-group a:hover, .button-group button:hover {
+      background-color: #2980b9;
+    }
+
+    .alert-info {
+      background-color: #eef6fb;
+      color: #2c3e50;
+    }
+
+    .alert-info h5 {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .alert-info p {
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg" style="background-color: #2c3e50;">
+  <div class="container-fluid justify-content-center">
+    <span class="navbar-brand mb-0 h1 text-white">📊 Veri Görselleştirme</span>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <ul class="nav nav-tabs justify-content-center" id="chartTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="racing-tab" data-bs-toggle="tab" data-bs-target="#racing" type="button" role="tab">🏁 Yarışan Veriler</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="cluster-tab" data-bs-toggle="tab" data-bs-target="#cluster" type="button" role="tab">🧩 Kümeleme Grafiği</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline" type="button" role="tab">🕒 Zaman Çizelgesi</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="wordcloud-tab" data-bs-toggle="tab" data-bs-target="#wordcloud" type="button" role="tab">☁️ Kelime Bulutu</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="animated-tab" data-bs-toggle="tab" data-bs-target="#animated" type="button" role="tab">🎞️ Hareketli Grafikler</button>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-4">
+    <!-- Yarışan Veriler -->
+    <div class="tab-pane fade show active" id="racing" role="tabpanel">
+      <h4>🏁 Yarışan Veriler (Racing Bar Chart)</h4>
+      <p>Excel dosyanızı yükleyerek verilerinizi görüntüleyin ve düzenleyin.</p>
+
+      <div class="mb-3">
+        <label for="racingFile" class="form-label">Excel Dosyası Yükle</label>
+        <input class="form-control" type="file" id="racingFile" accept=".xlsx, .xls">
+      </div>
+
+      <div class="mb-3">
+        <label for="videoTitle" class="form-label">Video Başlığı</label>
+        <input type="text" class="form-control" id="videoTitle" placeholder="Başlık girin" />
+      </div>
+
+      <div id="excelTableContainer" class="table-responsive mt-4">
+        <table id="excelTable" class="table table-bordered table-striped"></table>
+      </div>
+    </div>
+
+    <!-- Kümeleme -->
+    <div class="tab-pane fade" id="cluster" role="tabpanel">
+      <h4>🧩 Kümeleme (K-Means) Görselleştirme</h4>
+      <p>Verilerinizi gruplayarak kümeleme grafiği oluşturabilirsiniz.</p>
+
+      <div class="mb-3">
+        <label for="clusterFile" class="form-label">Excel Dosyası Yükle</label>
+        <input class="form-control" type="file" id="clusterFile" accept=".xlsx, .xls">
+      </div>
+
+      <div class="mt-4">
+        <label for="kSlider" class="form-label">Küme Sayısı (k): <span id="kValue">3</span></label>
+        <input type="range" class="form-range" min="2" max="10" value="3" id="kSlider" />
+      </div>
+
+      <div class="text-center mt-3">
+        <button class="btn btn-primary" onclick="generateCluster()">Kümeleme Grafiğini Oluştur</button>
+      </div>
+
+      <div id="clusterOutput" class="mt-4 text-center"></div>
+    </div>
+
+    <!-- Zaman Çizelgesi -->
+    <!-- Zaman Çizelgesi -->
+    <div class="tab-pane fade" id="timeline" role="tabpanel">
+      <h4>🕒 Zaman Çizelgesi</h4>
+      <p>Verilerinizin zaman içindeki değişimini animasyonlu bir grafikle izleyin.</p>
+
+      <form action="/timeline" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="timelineFile" class="form-label">Excel Dosyası Yükle (Zaman sütunu içermeli)</label>
+          <input class="form-control" type="file" name="excel" id="timelineFile" accept=".xlsx,.xls" required />
+        </div>
+
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary">🎬 Video Oluştur</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Kelime Bulutu -->
+    <div class="tab-pane fade" id="wordcloud" role="tabpanel">
+      <h4>☁️ Kelime Bulutu (Word Cloud)</h4>
+      <p>Yorum, açıklama veya serbest metni aşağıya yapıştırın. En sık geçen kelimelerle görsel bir kelime bulutu oluşturulur.</p>
+
+      <div class="mb-3">
+        <label for="wordcloudText" class="form-label">Metin Girişi</label>
+        <textarea class="form-control" id="wordcloudText" rows="6" placeholder="Buraya metni yapıştırın..."></textarea>
+      </div>
+
+      <div class="text-center mt-3">
+        <button class="btn btn-primary" onclick="generateWordCloud()">Kelime Bulutunu Oluştur</button>
+      </div>
+
+      <div id="wordcloudOutput" class="mt-4 text-center"></div>
+    </div>
+
+    <!-- Hareketli Grafik -->
+    <div class="tab-pane fade" id="animated" role="tabpanel">
+      <h3>📽 Hareketli Grafik Oluştur</h3>
+      <form id="animationForm">
+        <div id="exampleFileLink" class="mt-2"></div>
+        <label for="chartType">Grafik Tipi:</label>
+        <select name="chartType" id="chartType" class="form-select">
+          <option value="line">Çizgi Grafik</option>
+          <option value="bar">Sütun Grafik</option>
+          <option value="pie">Pasta Grafik</option>
+          <option value="radar">Radar Grafik</option>
+          <option value="timeseries">Zaman Serisi</option>
+        </select><br>
+
+        <label for="fileInput">Excel Dosyası Yükle:</label>
+        <input type="file" name="file" id="fileInput" class="form-control"><br>
+
+        <button type="submit" class="btn btn-primary">Grafiği Oluştur</button>
+      </form>
+
+      <div id="animationResult" class="mt-4 text-center"></div>
+    </div>
+  </div>
+
+  <div class="alert alert-info border-0 shadow-sm rounded-4 p-4 mt-4">
+    <h5 class="mb-2 text-center">📥 Excel Yükleyin, Tabloyu Düzenleyin ve Video Oluşturun</h5>
+    <p class="form-info text-muted mt-3 mb-2 text-center">
+      Excel dosyanızdaki verileri düzenledikten sonra animasyonlu video çıktısı alabilirsiniz. <br>
+      <strong>Tablonun ilk satırı başlık/kategorilerden oluşmalıdır</strong>, altındaki satırlar ise veri olarak işlenir.
+    </p>
+  </div>
+
+  <div class="button-group">
+    <button id="videoButton" style="background-color: #2c3e50;">🎬 Video Oluştur</button>
+    <a href="/">Ana Sayfa</a>
+  </div>
+
+  <form id="videoForm" style="display: none;">
+    <input type="file" id="videoExcelFile" name="excel">
+  </form>
+</div>
+
+<div class="footer-links">
+  <a href="/hakkimizda">Hakkımızda</a>
+  <a href="/iletisim">İletişim</a>
+  <a href="/gizlilik">Gizlilik Politikası</a>
+  <a href="/kullanim">Kullanım Koşulları</a>
+  <a href="/dmca">DMCA</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.getElementById('racingFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    document.getElementById('videoExcelFile').files = e.target.files;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      renderTable(jsonData);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  function renderTable(data) {
+    const table = document.getElementById('excelTable');
+    table.innerHTML = '';
+    data.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      row.forEach(cell => {
+        const cellElement = document.createElement(i === 0 ? 'th' : 'td');
+        cellElement.textContent = cell ?? '';
+        if (i !== 0) cellElement.contentEditable = true;
+        tr.appendChild(cellElement);
+      });
+      table.appendChild(tr);
+    });
+  }
+
+  document.getElementById('videoButton').addEventListener('click', function() {
+    const file = document.getElementById('videoExcelFile').files[0];
+    const title = document.getElementById('videoTitle').value.trim();
+
+    if (!file || !title) {
+      alert('Excel dosyası ve video başlığı gereklidir.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('excel', file);
+    formData.append('title', title);
+
+    fetch('/video/create', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Sunucudan dosya alınamadı.');
+      return res.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'yarisan_veriler_video.mp4';
+      a.click();
+    })
+    .catch(err => alert("Bir hata oluştu: " + err.message));
+  });
+
+  const kSlider = document.getElementById('kSlider');
+  const kValue = document.getElementById('kValue');
+  kSlider.addEventListener('input', () => kValue.textContent = kSlider.value);
+
+  function generateCluster() {
+    const file = document.getElementById('clusterFile').files[0];
+    if (!file) {
+      alert('Lütfen bir Excel dosyası yükleyin.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('excel', file);
+    formData.append('k', kSlider.value);
+
+    fetch('/viz/kumeleme', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('clusterOutput').innerHTML =
+          `<iframe src="${data.url}" width="100%" height="500" frameborder="0"></iframe>`;
+      } else {
+        alert('Sunucu hatası: ' + data.error);
+      }
+    })
+    .catch(err => alert('İstek hatası: ' + err.message));
+  }
+
+  function generateWordCloud() {
+  const text = document.getElementById('wordcloudText').value.trim();
+  if (!text) {
+    alert('Lütfen analiz edilecek metni girin.');
+    return;
+  }
+
+  fetch('/viz/wordcloud', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ text: text })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('wordcloudOutput').innerHTML =
+        `<img src="${data.url}" alt="Kelime Bulutu" style="max-width: 100%; height: auto;" />`;
+    } else {
+      alert('Hata: ' + data.error);
+    }
+  })
+  .catch(err => alert('Bir hata oluştu: ' + err.message));
+}
+  document.getElementById("animationForm").addEventListener("submit", function(e) {
+  e.preventDefault(); // Sayfa yenilemesini ENGELLE
+  const formData = new FormData();
+  formData.append("chartType", document.getElementById("chartType").value);
+  formData.append("file", document.getElementById("fileInput").files[0]);
+
+  fetch("/upload-animation", {
+    method: "POST",
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById("animationResult").innerHTML = `
+      <video controls autoplay loop width="500">
+        <source src="${data.path}" type="video/mp4">
+        <img src="${data.path}" alt="grafik">
+      </video>
+      <br><a href="${data.path}" download>İndir</a>
+    `;
+    // 👇 Bu kısmı buraya ekle
+    const animatedTab = new bootstrap.Tab(document.querySelector('#animated-tab'));
+    animatedTab.show(); 
+  });
+});
+
+document.getElementById("chartType").addEventListener("change", function() {
+  const type = this.value;
+  const linkContainer = document.getElementById("exampleFileLink");
+
+  const examples = {
+    line: {
+      text: "📈 Çizgi Grafik Örneği",
+      href: "/static/documents/ornek_cizgi.xlsx"
+    },
+    bar: {
+      text: "📊 Sütun Grafik Örneği",
+      href: "/static/documents/ornek_sutun.xlsx"
+    },
+    pie: {
+      text: "🥧 Pasta Grafik Örneği",
+      href: "/static/documents/ornek_pasta.xlsx"
+    },
+    radar: {
+      text: "🕸 Radar Grafik Örneği",
+      href: "/static/documents/ornek_radar.xlsx"
+    },
+    timeseries: {
+      text: "🕒 Zaman Serisi Örneği",
+      href: "/static/documents/ornek_zaman.xlsx"
+    }
+  };
+
+  const selected = examples[type];
+  if (selected) {
+    linkContainer.innerHTML = `
+      <a href="${selected.href}" download class="btn btn-outline-secondary btn-sm mt-2">
+        ${selected.text} (Excel indir)
+      </a>
+    `;
+  } else {
+    linkContainer.innerHTML = "";
+  }
+});
+
+ // Sayfa yüklendiğinde de çalışsın
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("chartType").dispatchEvent(new Event("change"));
+  });
+  </script>
+</body>
+</html>

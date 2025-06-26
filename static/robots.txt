@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://www.dijitalhamal.com/sitemap.xml
